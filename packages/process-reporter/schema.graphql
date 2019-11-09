@@ -1,0 +1,25 @@
+type Mutation {
+	createSource(id: ID!, name: String!, timestamp: AWSTimestamp!): Source!
+}
+
+type Query {
+	getAllSources: [Source]!
+    getSource(id: ID!): Source
+}
+
+type Source {
+	id: ID!
+	name: String!
+	timestamp: AWSTimestamp!
+}
+
+type Subscription {
+	onCreateSource: Source
+	@aws_subscribe(mutations: ["createSource"])
+}
+
+schema {
+	query: Query
+	mutation: Mutation
+	subscription: Subscription
+}

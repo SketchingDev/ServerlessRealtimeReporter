@@ -1,0 +1,17 @@
+{
+  "name": "realtime-process-reporter",
+  "private": true,
+  "devDependencies": {
+    "lerna": "^3.6.0",
+    "prettier": "^1.15.3",
+    "tslint": "^5.11.0",
+    "tslint-config-prettier": "^1.17.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "lerna run test --stream",
+    "lint": "lerna run lint --stream"
+  }
+}

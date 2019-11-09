@@ -1,0 +1,88 @@
+service:
+  name: process-reporter
+
+plugins:
+  - serverless-appsync-plugin
+  - serverless-manifest-plugin
+
+provider:
+  name: aws
+  stage: ${opt:stage, 'dev'}
+
+custom:
+  appSyncName: process-reporter-${self:provider.stage}
+  sourceDataSourceName: sources_datasource_${self:provider.stage}
+  appSync:
+    name: ${self:custom.appSyncName}
+    authenticationType: API_KEY
+    serviceRole: "${self:custom.appSyncName}-AppSyncServiceRole"
+    mappingTemplates:
+      - dataSource: ${self:custom.sourceDataSourceName}
+        type: Mutation
+        field: createSource
+        request: "createSource-request-mapping-template.vtl"
+        response: "createSource-response-mapping-template.vtl"
+      - dataSource: ${self:custom.sourceDataSourceName}
+        type: Query
+        field: getSource
+        request: "getSource-request-mapping-template.vtl"
+        response: "getSource-response-mapping-template.vtl"
+      - dataSource: ${self:custom.sourceDataSourceName}
+        type: Query
+        field: getAllSources
+        request: "getAllSources-request-mapping-template.vtl"
+        response: "getAllSources-response-mapping-template.vtl"
+    dataSources:
+      - type: AMAZON_DYNAMODB
+        name: ${self:custom.sourceDataSourceName}
+        description: "Sources table"
+        config:
+          tableName: { Ref: SourceTable }
+          serviceRoleArn: { Fn::GetAtt: [AppSyncDynamoDBServiceRole, Arn] }
+
+resources:
+  Resources:
+    SourceTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: 'Sources'
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+
+    AppSyncDynamoDBServiceRole:
+      Type: "AWS::IAM::Role"
+      Properties:
+        RoleName: "DynamoDB-${self:custom.appSync.serviceRole}"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Effect: "Allow"
+              Principal:
+                Service:
+                  - "appsync.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+        Policies:
+          - PolicyName: "DynamoDB-${self:custom.appSync.serviceRole}-Policy"
+            PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                - Effect: "Allow"
+                  Action:
+                    - "dynamodb:Query"
+                    - "dynamodb:BatchWriteItem"
+                    - "dynamodb:GetItem"
+                    - "dynamodb:DeleteItem"
+                    - "dynamodb:PutItem"
+                    - "dynamodb:Scan"
+                    - "dynamodb:UpdateItem"
+                  Resource:
+                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/Sources" ]]
+                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/Sources/*" ]]

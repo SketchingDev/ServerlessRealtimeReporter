@@ -1,0 +1,32 @@
+{
+  "name": "process-reporter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API for reporting on automated processes",
+  "scripts": {
+    "lint": "tslint -c tslint.json '{__tests__}/**/*.ts'",
+    "test:integration": "jest __tests__/integration/",
+    "deploy": "sls deploy --stage dev",
+    "destroy": "sls remove"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.22",
+    "@types/node": "^10.12.18",
+    "@types/p-retry": "^3.0.1",
+    "@types/uuid": "^3.4.6",
+    "async-retry": "^1.2.3",
+    "aws-appsync": "^2.0.2",
+    "graphql-tag": "^2.10.1",
+    "isomorphic-fetch": "^2.2.1",
+    "jest": "^24.9.0",
+    "p-retry": "^4.2.0",
+    "serverless": "^1.57.0",
+    "serverless-appsync-plugin": "^1.1.2",
+    "serverless-manifest-plugin": "^0.0.9",
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.2.4",
+    "uuid": "^3.3.3"
+  },
+  "author": "https://github.com/SketchingDev",
+  "license": "MIT"
+}
