@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Creates a user that can deploy the project'
+Resources:
+  ProcessReporterDeploymentUser:
+    Type: 'AWS::IAM::User'
+  ProcessReporterDeploymentUserKeys:
+    Type: 'AWS::IAM::AccessKey'
+    Properties:
+      UserName: !Ref ProcessReporterDeploymentUser
+  ServelessAppCFPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: ProcessReporterDeployment
+      Description: This policy allows the ProcessReporterDeploymentUser to deploy all resources necessary
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'cloudformation:*'
+              - 's3:*'
+              - 'appsync:*'
+              - 'dynamodb:*'
+              - 'iam:*'
+            Resource: '*'
+      Users:
+        - !Ref ProcessReporterDeploymentUser
+Outputs:
+  AccessKey:
+    Value: !Ref ProcessReporterDeploymentUserKeys
+    Description: Access Key ID of Deployment User
+  SecretKey:
+    Value: !GetAtt
+      - ProcessReporterDeploymentUserKeys
+      - SecretAccessKey
+    Description: Secret Key of Deployment User
