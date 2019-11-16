@@ -22,6 +22,9 @@ Resources:
               - 'appsync:*'
               - 'dynamodb:*'
               - 'iam:*'
+              - 'iam:GetRole'
+              - 'lambda:*'
+              - 'sqs:*'
             Resource: '*'
       Users:
         - !Ref ProcessReporterDeploymentUser

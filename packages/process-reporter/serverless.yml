@@ -3,15 +3,43 @@ service:
 
 plugins:
   - serverless-appsync-plugin
-  - serverless-manifest-plugin
+  - serverless-webpack
 
 provider:
   name: aws
+  runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:DeleteMessage
+        - sqs:ReceiveMessage
+      Resource: { Fn::GetAtt: [ CreateSourceQueue, Arn ] }
+
+functions:
+  sourceCreator:
+    handler: handler.sourceCreator
+    environment:
+      REGION: { "Ref": "AWS::Region" }
+      GRAPHQL_API_URL: { Fn::GetAtt: [GraphQlApi, GraphQLUrl] }
+      GRAPHQL_API_KEY: { Fn::GetAtt: [GraphQlApiKeyDefault, ApiKey] }
+    events:
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - CreateSourceQueue
+              - Arn
 
 custom:
   appSyncName: process-reporter-${self:provider.stage}
   sourceDataSourceName: sources_datasource_${self:provider.stage}
+  queueName: process-reporter-${self:provider.stage}-create-source-queue
+
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
   appSync:
     name: ${self:custom.appSyncName}
     authenticationType: API_KEY
@@ -42,6 +70,13 @@ custom:
 
 resources:
   Resources:
+    CreateSourceQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:custom.queueName}
+        MessageRetentionPeriod: 120
+        VisibilityTimeout: 60
+
     SourceTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
@@ -86,3 +121,8 @@ resources:
                   Resource:
                     - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/Sources" ]]
                     - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/Sources/*" ]]
+
+  Outputs:
+    QueueName:
+      Description: "Name of queue"
+      Value: ${self:custom.queueName}

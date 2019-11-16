@@ -1,0 +1,4 @@
+[submodule "packages/process-reporter/.serverless_plugins/serverless-appsync-plugin"]
+	path = packages/process-reporter/.serverless_plugins/serverless-appsync-plugin
+	url = https://github.com/SketchingDev/serverless-appsync-plugin.git
+	branch = add-option-to-conceal-api-keys

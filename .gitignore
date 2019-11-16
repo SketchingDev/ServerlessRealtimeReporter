@@ -1,5 +1,6 @@
 # Serverless
 .serverless/
+.webpack
 
 # Node/Yarn
 node_modules/
