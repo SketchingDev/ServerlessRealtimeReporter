@@ -2,7 +2,7 @@ import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync/lib";
 import { CloudFormation, SQS } from "aws-sdk";
 import "isomorphic-fetch";
 import uuidv4 from "uuid/v4";
-import { Source } from "../../src/model/source";
+import { Source } from "../../src/source";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForSourceInAppSync } from "../waitForSourceInAppSync";
 

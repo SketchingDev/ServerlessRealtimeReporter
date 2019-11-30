@@ -3,9 +3,9 @@ import { Connect } from "aws-amplify-react";
 import { distanceInWords } from "date-fns";
 import * as React from "react";
 
-import { Source } from "@serverlessRealtimeReporter/models";
 import { Link } from "react-router-dom";
 import { Header, Icon, List } from "semantic-ui-react";
+import { Source } from "./@types/source";
 import { getAllSources as getAllSourcesQuery } from "./graphql/queries";
 import { onCreateSource as onCreateSourceSub } from "./graphql/subscriptions";
 

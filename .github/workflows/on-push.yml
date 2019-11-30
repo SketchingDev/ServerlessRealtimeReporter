@@ -37,21 +37,15 @@ jobs:
       - name: Build
         run: yarn build
       - name: Unit tests
-        run: |
-          yarn build
-          yarn test
+        run: yarn test
       - name: Deploy services
-        run: |
-          yarn build
-          yarn deploy
+        run: yarn deploy
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       - name: Integration tests
-        run: |
-          yarn build
-          yarn test:integration
+        run: yarn test:integration
         env:
           CI: true
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

@@ -13,7 +13,6 @@
     "postinstall": "cd .serverless_plugins/serverless-appsync-plugin && yarn"
   },
   "dependencies": {
-    "@serverlessRealtimeReporter/models": "1.0.0",
     "@laconia/core": "^1.8.0",
     "@laconia/event": "^1.8.0",
     "ajv": "^6.10.2",
