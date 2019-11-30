@@ -34,6 +34,8 @@ jobs:
           node-version: 10.x
       - name: Install dependencies
         run: yarn
+      - name: Build
+        run: yarn build
       - name: Unit tests
         run: yarn test
       - name: Deploy services
