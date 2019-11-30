@@ -3,17 +3,17 @@ import { Connect } from "aws-amplify-react";
 import { distanceInWords } from "date-fns";
 import * as React from "react";
 
+import { Source } from "@serverlessRealtimeReporter/models";
 import { Link } from "react-router-dom";
 import { Header, Icon, List } from "semantic-ui-react";
-import { ISource } from "./@types/source";
 import { getAllSources as getAllSourcesQuery } from "./graphql/queries";
 import { onCreateSource as onCreateSourceSub } from "./graphql/subscriptions";
 
 export class ListSources extends React.Component {
-  private createdSources: { [sourceId: string]: ISource } = {};
+  private createdSources: { [sourceId: string]: Source } = {};
 
   public render() {
-    const SourceItem = ({ source }: { source: ISource }) => (
+    const SourceItem = ({ source }: { source: Source }) => (
       <List.Item key={source.id}>
         <List.Icon name="github" size="large" verticalAlign="middle" />
         <List.Content>
@@ -25,7 +25,7 @@ export class ListSources extends React.Component {
       </List.Item>
     );
 
-    const SourcesList = ({ sources }: { sources: ISource[] }) => (
+    const SourcesList = ({ sources }: { sources: Source[] }) => (
       <List divided={true} relaxed={true}>
         {sources
           .sort((s1, s2) => s2.timestamp - s1.timestamp)
@@ -35,7 +35,7 @@ export class ListSources extends React.Component {
       </List>
     );
 
-    const subscriptionMsg = (prev: { listSources: ISource[] }, { onCreateSource }: { onCreateSource: ISource }) => {
+    const subscriptionMsg = (prev: { listSources: Source[] }, { onCreateSource }: { onCreateSource: Source }) => {
       this.createdSources[onCreateSource.id] = onCreateSource;
       return prev;
     };
@@ -51,7 +51,7 @@ export class ListSources extends React.Component {
           loading,
           errors,
         }: {
-          data: { getAllSources: ISource[] };
+          data: { getAllSources: Source[] };
           loading: any;
           errors: any;
         }) => {
@@ -63,7 +63,7 @@ export class ListSources extends React.Component {
           }
 
           const allSources = Object.values(this.createdSources).concat(getAllSources);
-          const orderedSources = allSources.sort((s1: ISource, s2: ISource) => s1.timestamp - s2.timestamp);
+          const orderedSources = allSources.sort((s1: Source, s2: Source) => s1.timestamp - s2.timestamp);
 
           return (
             <div>

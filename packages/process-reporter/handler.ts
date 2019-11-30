@@ -1,13 +1,12 @@
 import laconia, { LaconiaFactory } from "@laconia/core";
 import { sqs } from "@laconia/event";
+import { Source, sourceSchema } from "@serverlessRealtimeReporter/models";
 import AJV from "ajv";
 import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync/lib";
 import { SQSEvent, SQSHandler } from "aws-lambda";
 import "isomorphic-fetch";
 import { createSource } from "./src/graphql/createSource";
 import { CreateSourceVariables } from "./src/graphql/createSourceVariables";
-import { Source } from "./src/model/source";
-import { sourceSchema } from "./src/model/source.schema";
 
 export interface AppDependencies {
   appSync: AWSAppSyncClient<any>;

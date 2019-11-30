@@ -11,6 +11,7 @@
     "packages/*"
   ],
   "scripts": {
+    "build": "lerna run build --stream",
     "test": "lerna run test --stream",
     "test:integration": "lerna run test:integration --stream",
     "lint": "lerna run lint --stream",

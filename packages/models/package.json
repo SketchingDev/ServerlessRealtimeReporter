@@ -1,0 +1,17 @@
+{
+  "name": "@serverlessRealtimeReporter/models",
+  "version": "1.0.0",
+  "types": "lib/index.d.ts",
+  "main": "lib/index.js",
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^10.9.4",
+    "ts-loader": "^4.5.0",
+    "tslint": "^5.11.0",
+    "typescript": "^3.0.1"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "lint": "tslint -c tslint.json 'lib/**/*.ts'"
+  }
+}

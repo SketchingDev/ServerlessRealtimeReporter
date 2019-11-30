@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@serverlessRealtimeReporter/models": "1.0.0",
     "aws-amplify": "^1.1.19",
     "aws-amplify-react": "^2.3.0",
     "date-fns": "^1.30.1",
