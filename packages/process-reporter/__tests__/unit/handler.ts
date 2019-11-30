@@ -1,10 +1,10 @@
 // @ts-ignore
 import laconia = require("@laconia/core");
-import { Source } from "@serverless-realtime-reporter/models";
 import AWSAppSyncClient from "aws-appsync/lib";
 import { SQSEvent } from "aws-lambda";
 import { app } from "../../handler";
 import { createSource } from "../../src/graphql/createSource";
+import { Source } from "../../src/source";
 
 test("Handler passes source to GraphQl mutation", async () => {
   const mockAppSync = {
