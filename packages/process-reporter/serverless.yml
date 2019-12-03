@@ -71,11 +71,43 @@ custom:
 resources:
   Resources:
     CreateSourceQueue:
-      Type: AWS::SQS::Queue
+      Type: "AWS::SQS::Queue"
       Properties:
         QueueName: ${self:custom.queueName}
         MessageRetentionPeriod: 120
         VisibilityTimeout: 60
+
+
+    CreateSourceQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: "allow-sqs-messages"
+              Effect: Allow
+              Principal: "*"
+              Resource: !GetAtt
+                - CreateSourceQueue
+                - Arn
+              Action: "SQS:SendMessage"
+              Condition:
+                StringEquals:
+                  aws:SourceAccount: !Ref "AWS::AccountId"
+        Queues:
+          - Ref: CreateSourceQueue
+
+#        Policies:
+#          - PolicyName: "SQS-${self:custom.sourceDataSourceName}-Policy"
+#            PolicyDocument:
+#              Version: "2012-10-17"
+#              Statement:
+#                - Effect: "Allow"
+#                  Action:
+#                    - "sqs:SendMessage"
+#                  Condition:
+#                    StringEquals:
+#                      aws:SourceAccount: !Ref "AWS::AccountId"
 
     SourceTable:
       Type: 'AWS::DynamoDB::Table'

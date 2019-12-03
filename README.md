@@ -1,6 +1,12 @@
 # Serverless Realtime Reporter
 
 
+## What makes up a process
+
+* Process invocation
+  * Sub-tasks
+    * The success of the invocation is dependent on these sub-tasks succeeding
+
 ## Create user for deploying
 
 ```bash

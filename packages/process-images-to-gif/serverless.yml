@@ -1,0 +1,56 @@
+service:
+  name: process-images-to-gif
+
+plugins:
+  - serverless-webpack
+  - serverless-s3-remover
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage, 'dev'}
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:GetQueueUrl
+        - sqs:SendMessage
+      Resource: {Fn::Join: ["", [ "arn:aws:sqs:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":", "${self:custom.processQueueName}" ]]}
+
+functions:
+  imageDownloader:
+    handler: handler.imageDownloader
+    environment:
+      REGION: { "Ref": "AWS::Region" }
+      PROCESS_SQS_QUEUE_NAME: ${self:custom.processQueueName}
+
+custom:
+  imageDownloaderBucketName: images-downloader-process-${self:provider.stage}
+  processQueueName: process-reporter-${self:provider.stage}-create-source-queue
+#  remover:
+#    buckets:
+#      - ${self:custom.bucketName.imageDownloaderBucketName}
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+
+#resources:
+#  Resources:
+#    S3BucketImageDownloader:
+#      Type: AWS::S3::Bucket
+#      Properties:
+#        BucketName: ${self:custom.bucketName.imageDownloaderBucketName}
+#        # TODO Change to private
+#        AccessControl: PublicRead
+#        NotificationConfiguration:
+#          LambdaConfigurations:
+#            - Event: 's3:ObjectCreated:*'
+#              Function:
+#                "Fn::GetAtt":
+#                  - SaveDailyImagesLambdaFunction
+#                  - Arn
+#  Outputs:
+#    QueueName:
+#      Description: "Name of queue"
+#      Value: ${self:custom.queueName}
