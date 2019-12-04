@@ -42,10 +42,22 @@ resources:
       Properties:
         BucketName: ${self:custom.imageDownloaderBucketName}
         AccessControl: Private
-#        NotificationConfiguration:
-#          LambdaConfigurations:
-#            - Event: 's3:ObjectCreated:*'
-#              Function:
-#                "Fn::GetAtt":
-#                  - ImageDownloaderLambdaFunction
-#                  - Arn
+        NotificationConfiguration:
+          LambdaConfigurations:
+            - Event: 's3:ObjectCreated:*'
+              Function:
+                "Fn::GetAtt":
+                  - ImageDownloaderLambdaFunction
+                  - Arn
+    ProcessSaveDailyImagesLambdaPermissionPhotosS3:
+      Type: "AWS::Lambda::Permission"
+      Properties:
+        FunctionName:
+          "Fn::GetAtt":
+            - ImageDownloaderLambdaFunction
+            - Arn
+        Principal: "s3.amazonaws.com"
+        Action: "lambda:InvokeFunction"
+        SourceAccount:
+          Ref: AWS::AccountId
+        SourceArn: "arn:aws:s3:::${self:custom.imageDownloaderBucketName}"
