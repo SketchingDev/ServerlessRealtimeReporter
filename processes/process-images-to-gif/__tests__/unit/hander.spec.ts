@@ -1,3 +1,4 @@
+test.skip("skip", () => undefined);
 // // @ts-ignore
 // import laconia = require("@laconia/core");
 // import AWSAppSyncClient from "aws-appsync/lib";

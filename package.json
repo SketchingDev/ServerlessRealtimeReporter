@@ -8,7 +8,8 @@
     "tslint-config-prettier": "^1.17.0"
   },
   "workspaces": [
-    "packages/*"
+    "services/*",
+    "processes/*"
   ],
   "scripts": {
     "build": "lerna run build --stream",
