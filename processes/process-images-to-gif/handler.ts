@@ -1,7 +1,7 @@
 import laconia from "@laconia/core";
 import { S3CreateEvent, SQSHandler } from "aws-lambda";
 import { SQS } from "aws-sdk";
-import { ProgressReporter } from "./src/ProgressReporter";
+import { SqsProgressReporter } from "./src/SqsProgressReporter";
 
 // export const sourceIdGenerator = (namespace: string) => (s3Event: IS3Record): RequestSourceId =>
 //   uuidv5(s3Event.s3.object.key + s3Event.eventTime, namespace);
@@ -12,7 +12,7 @@ export interface EnvDependencies {
 }
 
 export interface AppDependencies {
-  progressReporter: ProgressReporter
+  progressReporter: SqsProgressReporter
 }
 
 const awsDependencies = ({ env }: { env: EnvDependencies }) => ({
@@ -24,7 +24,7 @@ export const appDependencies = async ({sqs, env}: {
   sqs: SQS;
   env: EnvDependencies;
 }): Promise<AppDependencies> => ({
-  progressReporter: await ProgressReporter.createFromQueueName(sqs, env.PROCESS_SQS_QUEUE_NAME),
+  progressReporter: await SqsProgressReporter.createFromQueueName(sqs, env.PROCESS_SQS_QUEUE_NAME),
 });
 
 // @ts-ignore

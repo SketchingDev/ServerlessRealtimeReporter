@@ -16,6 +16,7 @@
     "test": "lerna run test --stream",
     "test:integration": "lerna run test:integration --stream",
     "lint": "lerna run lint --stream",
-    "deploy": "lerna run deploy --stream"
+    "deploy:test": "lerna run deploy:test --stream",
+    "destroy:test": "lerna run destroy:test --stream"
   }
 }

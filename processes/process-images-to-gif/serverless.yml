@@ -2,6 +2,7 @@ service:
   name: process-images-to-gif
 
 plugins:
+  - serverless-stage-manager
   - serverless-webpack
   - serverless-s3-remover
 
@@ -26,6 +27,9 @@ functions:
       PROCESS_SQS_QUEUE_NAME: ${self:custom.processQueueName}
 
 custom:
+  stages:
+    - dev
+    - test
   imageDownloaderBucketName: images-downloader-process-${self:provider.stage}
   processQueueName: process-reporter-${self:provider.stage}-create-source-queue
   remover:
@@ -36,7 +40,41 @@ custom:
     includeModules: true
 
 resources:
+  Conditions:
+    CreateTestQueue:
+      Fn::Equals:
+        - ${opt:stage}
+        - test
+
   Resources:
+    TestSourceQueue:
+      Type: "AWS::SQS::Queue"
+      Condition: CreateTestQueue
+      Properties:
+        QueueName: ${self:custom.processQueueName}
+        MessageRetentionPeriod: 120
+        VisibilityTimeout: 60
+
+    TestSourceQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Condition: CreateTestQueue
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: "allow-sqs-messages"
+              Effect: Allow
+              Principal: "*"
+              Resource: !GetAtt
+                - TestSourceQueue
+                - Arn
+              Action: "SQS:SendMessage"
+              Condition:
+                StringEquals:
+                  aws:SourceAccount: !Ref "AWS::AccountId"
+        Queues:
+          - Ref: TestSourceQueue
+
     ProcessS3BucketImageDownloader:
       Type: AWS::S3::Bucket
       Properties:
@@ -61,3 +99,9 @@ resources:
         SourceAccount:
           Ref: AWS::AccountId
         SourceArn: "arn:aws:s3:::${self:custom.imageDownloaderBucketName}"
+
+  Outputs:
+    QueueName:
+      Value: ${self:custom.processQueueName}
+    BucketName:
+      Value: ${self:custom.imageDownloaderBucketName}

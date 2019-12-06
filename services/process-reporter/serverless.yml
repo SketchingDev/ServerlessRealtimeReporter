@@ -2,6 +2,7 @@ service:
   name: process-reporter
 
 plugins:
+  - serverless-stage-manager
   - serverless-appsync-plugin
   - serverless-webpack
 
@@ -33,6 +34,9 @@ functions:
               - Arn
 
 custom:
+  stages:
+    - dev
+    - test
   appSyncName: process-reporter-${self:provider.stage}
   sourceDataSourceName: sources_datasource_${self:provider.stage}
   queueName: process-reporter-${self:provider.stage}-create-source-queue

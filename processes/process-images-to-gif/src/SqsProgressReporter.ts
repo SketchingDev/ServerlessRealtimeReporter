@@ -1,8 +1,12 @@
 import { SQS } from "aws-sdk";
 import { GetQueueUrlResult } from "aws-sdk/clients/sqs";
-import { Source } from "process-reporter/src/source";
+import { Source } from "./source";
 
-export class ProgressReporter {
+export interface ProgressReporter {
+  invokedProcess(invocationId: string, invocationName: string): Promise<void>;
+}
+
+export class SqsProgressReporter implements ProgressReporter {
 
   public static async createFromQueueName(sqs: SQS, queueName: string) {
     let getQueueUrlResponse: GetQueueUrlResult;
@@ -10,12 +14,12 @@ export class ProgressReporter {
       getQueueUrlResponse = await sqs.getQueueUrl({ QueueName: queueName }).promise();
     } catch (error) {
       throw new Error(`Failed to get URL for queue ${queueName} due to '${error}'`);
-      // if (error.errorType === ProgressReporter.NON_EXISTENT_QUEUE_TYPE) {
+      // if (error.errorType === SqsProgressReporter.NON_EXISTENT_QUEUE_TYPE) {
       //   throw new Error(`Failed to get URL for queue ${queueName} due to '${error.errorMessage}'`);
       // }
       // throw error;
     }
-    return new ProgressReporter(sqs, getQueueUrlResponse.QueueUrl!);
+    return new SqsProgressReporter(sqs, getQueueUrlResponse.QueueUrl!);
   }
   // private static readonly NON_EXISTENT_QUEUE_TYPE = "AWS.SimpleQueueService.NonExistentQueue";
 
