@@ -4,7 +4,7 @@ import AWSAppSyncClient from "aws-appsync/lib";
 import { SQSEvent } from "aws-lambda";
 import { app } from "../../handler";
 import { createSource } from "../../src/graphql/createSource";
-import { Source } from "../../src/model/source";
+import { Source } from "../../src/source";
 
 test("Handler passes source to GraphQl mutation", async () => {
   const mockAppSync = {

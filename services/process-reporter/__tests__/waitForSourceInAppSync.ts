@@ -1,6 +1,6 @@
 import AWSAppSyncClient from "aws-appsync/lib";
 import pRetry from "p-retry";
-import { Source } from "../src/model/source";
+import { Source } from "../src/source";
 import { getAllSources } from "./graphql";
 
 export const waitForSourceInAppSync = async (client: AWSAppSyncClient<any>, sourceId: string) => {

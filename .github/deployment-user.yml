@@ -25,6 +25,9 @@ Resources:
               - 'iam:GetRole'
               - 'lambda:*'
               - 'sqs:*'
+              - 'logs:CreateLogGroup'
+              - 'logs:DescribeLogGroups'
+              - 'logs:DeleteLogGroup'
             Resource: '*'
       Users:
         - !Ref ProcessReporterDeploymentUser

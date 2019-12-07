@@ -1,5 +1,12 @@
 # Serverless Realtime Reporter
 
+[![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/)
+
+## What makes up a process
+
+* Process invocation
+  * Sub-tasks
+    * The success of the invocation is dependent on these sub-tasks succeeding
 
 ## Create user for deploying
 

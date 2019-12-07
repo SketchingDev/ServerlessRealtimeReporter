@@ -2,6 +2,7 @@ service:
   name: process-reporter
 
 plugins:
+  - serverless-stage-manager
   - serverless-appsync-plugin
   - serverless-webpack
 
@@ -33,7 +34,11 @@ functions:
               - Arn
 
 custom:
+  stages:
+    - dev
+    - test
   appSyncName: process-reporter-${self:provider.stage}
+  dynamodbSourceTableName: process-reporter-sources-${self:provider.stage}
   sourceDataSourceName: sources_datasource_${self:provider.stage}
   queueName: process-reporter-${self:provider.stage}-create-source-queue
 
@@ -71,16 +76,36 @@ custom:
 resources:
   Resources:
     CreateSourceQueue:
-      Type: AWS::SQS::Queue
+      Type: "AWS::SQS::Queue"
       Properties:
         QueueName: ${self:custom.queueName}
         MessageRetentionPeriod: 120
         VisibilityTimeout: 60
 
+
+    CreateSourceQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: "allow-sqs-messages"
+              Effect: Allow
+              Principal: "*"
+              Resource: !GetAtt
+                - CreateSourceQueue
+                - Arn
+              Action: "SQS:SendMessage"
+              Condition:
+                StringEquals:
+                  aws:SourceAccount: !Ref "AWS::AccountId"
+        Queues:
+          - Ref: CreateSourceQueue
+
     SourceTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
-        TableName: 'Sources'
+        TableName: ${self:custom.dynamodbSourceTableName}
         KeySchema:
           - AttributeName: id
             KeyType: HASH
@@ -119,8 +144,8 @@ resources:
                     - "dynamodb:Scan"
                     - "dynamodb:UpdateItem"
                   Resource:
-                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/Sources" ]]
-                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/Sources/*" ]]
+                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/", "${self:custom.dynamodbSourceTableName}" ]]
+                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/", "${self:custom.dynamodbSourceTableName}", "/*" ]]
 
   Outputs:
     QueueName:

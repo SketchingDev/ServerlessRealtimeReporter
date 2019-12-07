@@ -6,14 +6,20 @@ import { SQSEvent, SQSHandler } from "aws-lambda";
 import "isomorphic-fetch";
 import { createSource } from "./src/graphql/createSource";
 import { CreateSourceVariables } from "./src/graphql/createSourceVariables";
-import { Source } from "./src/model/source";
-import { sourceSchema } from "./src/model/source.schema";
+import { Source } from "./src/source";
+import { sourceSchema } from "./src/source.schema";
+
+export interface EnvDependencies {
+  REGION:string;
+  GRAPHQL_API_KEY: string;
+  GRAPHQL_API_URL: string;
+}
 
 export interface AppDependencies {
   appSync: AWSAppSyncClient<any>;
 }
 
-const dependencies: LaconiaFactory = ({ env }) => ({
+const dependencies: LaconiaFactory = ({ env } : {env: EnvDependencies}) => ({
     appSync: new AWSAppSyncClient({
     auth: {
       type: AUTH_TYPE.API_KEY,

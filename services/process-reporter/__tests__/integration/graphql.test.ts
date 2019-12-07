@@ -4,9 +4,9 @@ import "isomorphic-fetch";
 import uuidv4 from "uuid/v4";
 import { createSource } from "../../src/graphql/createSource";
 import { CreateSourceVariables } from "../../src/graphql/createSourceVariables";
-import { Source } from "../../src/model/source";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForSourceInAppSync } from "../waitForSourceInAppSync";
+import { Source } from "../../src/source";
 
 
 describe("GraphQL deployment", () => {

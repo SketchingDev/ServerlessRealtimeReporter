@@ -8,12 +8,17 @@
     "tslint-config-prettier": "^1.17.0"
   },
   "workspaces": [
-    "packages/*"
+    "services/*",
+    "processes/*"
   ],
   "scripts": {
+    "build": "lerna run build --stream",
     "test": "lerna run test --stream",
     "test:integration": "lerna run test:integration --stream",
     "lint": "lerna run lint --stream",
-    "deploy": "lerna run deploy --stream"
+    "deploy:test": "lerna run deploy:test --stream",
+    "deploy:dev": "lerna run deploy:dev --stream",
+    "destroy:test": "lerna run destroy:test --stream",
+    "destroy:dev": "lerna run destroy:dev --stream"
   }
 }

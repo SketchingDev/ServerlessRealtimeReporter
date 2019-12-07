@@ -1,0 +1,109 @@
+service:
+  name: process-images-to-gif
+
+plugins:
+  - serverless-stage-manager
+  - serverless-webpack
+  - serverless-s3-remover
+
+provider:
+  name: aws
+  runtime: nodejs10.x
+  stage: ${opt:stage, 'dev'}
+  environment:
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - sqs:GetQueueUrl
+        - sqs:SendMessage
+      Resource: {Fn::Join: ["", [ "arn:aws:sqs:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":", "${self:custom.processQueueName.${self:provider.stage}}" ]]}
+
+functions:
+  imageDownloader:
+    handler: handler.imageDownloader
+    environment:
+      REGION: { "Ref": "AWS::Region" }
+      PROCESS_SQS_QUEUE_NAME: ${self:custom.processQueueName.${self:provider.stage}}
+
+custom:
+  stages:
+    - dev
+    - test
+  imageDownloaderBucketName: images-downloader-process-${self:provider.stage}
+  processQueueName:
+    test: process-reporter-test-create-source-queue-${sls:instanceId}
+    dev: process-reporter-dev-create-source-queue
+  remover:
+    buckets:
+      - ${self:custom.imageDownloaderBucketName}
+  webpack:
+    webpackConfig: ./webpack.config.js
+    includeModules: true
+
+resources:
+  Conditions:
+    CreateTestQueue:
+      Fn::Equals:
+        - ${opt:stage}
+        - test
+
+  Resources:
+    TestSourceQueue:
+      Type: "AWS::SQS::Queue"
+      Condition: CreateTestQueue
+      Properties:
+        QueueName: ${self:custom.processQueueName.${self:provider.stage}}
+        MessageRetentionPeriod: 120
+        VisibilityTimeout: 60
+
+    TestSourceQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Condition: CreateTestQueue
+      Properties:
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: "allow-sqs-messages"
+              Effect: Allow
+              Principal: "*"
+              Resource: !GetAtt
+                - TestSourceQueue
+                - Arn
+              Action: "SQS:SendMessage"
+              Condition:
+                StringEquals:
+                  aws:SourceAccount: !Ref "AWS::AccountId"
+        Queues:
+          - Ref: TestSourceQueue
+
+    ProcessS3BucketImageDownloader:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.imageDownloaderBucketName}
+        AccessControl: Private
+        NotificationConfiguration:
+          LambdaConfigurations:
+            - Event: 's3:ObjectCreated:*'
+              Function:
+                "Fn::GetAtt":
+                  - ImageDownloaderLambdaFunction
+                  - Arn
+    ProcessSaveDailyImagesLambdaPermissionPhotosS3:
+      Type: "AWS::Lambda::Permission"
+      Properties:
+        FunctionName:
+          "Fn::GetAtt":
+            - ImageDownloaderLambdaFunction
+            - Arn
+        Principal: "s3.amazonaws.com"
+        Action: "lambda:InvokeFunction"
+        SourceAccount:
+          Ref: AWS::AccountId
+        SourceArn: "arn:aws:s3:::${self:custom.imageDownloaderBucketName}"
+
+  Outputs:
+    QueueName:
+      Value: ${self:custom.processQueueName.${self:provider.stage}}
+    BucketName:
+      Value: ${self:custom.imageDownloaderBucketName}
