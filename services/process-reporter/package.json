@@ -10,7 +10,9 @@
     "test:integration": "jest __tests__/integration/",
     "test": "jest __tests__/unit/",
     "deploy:test": "sls deploy --stage test --conceal",
-    "destroy:test": "sls remove --stage test"
+    "destroy:test": "sls remove --stage test",
+    "deploy:dev": "sls deploy --stage dev",
+    "destroy:dev": "sls remove --stage dev"
   },
   "dependencies": {
     "@laconia/core": "^1.8.0",

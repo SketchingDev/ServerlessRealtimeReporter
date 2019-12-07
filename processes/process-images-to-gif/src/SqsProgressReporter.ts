@@ -35,7 +35,7 @@ export class SqsProgressReporter implements ProgressReporter {
     }
 
     const source: Source = {
-      id: invocationName, name: invocationName, timestamp: Date.now(),
+      id: invocationId, name: invocationName, timestamp: Date.now(),
     };
 
     await this.sqs.sendMessage({

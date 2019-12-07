@@ -47,22 +47,22 @@ export class ListSources extends React.Component {
         onSubscriptionMsg={subscriptionMsg}
       >
         {({
-          data: { getAllSources },
+          data,
           loading,
           errors,
         }: {
           data: { getAllSources: Source[] };
           loading: any;
-          errors: any;
+          errors: Error[];
         }) => {
           if (errors && errors.length > 0) {
-            return <h3>Error</h3>;
+            return <div><h3>Error...</h3>{errors.map(eb => (<p key="{eb.message}">{eb.message}</p>))}</div>;
           }
-          if (loading || !getAllSources) {
+          if (loading || !data.getAllSources) {
             return <h3>Loading...</h3>;
           }
 
-          const allSources = Object.values(this.createdSources).concat(getAllSources);
+          const allSources = Object.values(this.createdSources).concat(data.getAllSources);
           const orderedSources = allSources.sort((s1: Source, s2: Source) => s1.timestamp - s2.timestamp);
 
           return (

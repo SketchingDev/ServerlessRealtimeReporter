@@ -17,21 +17,23 @@ provider:
       Action:
         - sqs:GetQueueUrl
         - sqs:SendMessage
-      Resource: {Fn::Join: ["", [ "arn:aws:sqs:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":", "${self:custom.processQueueName}" ]]}
+      Resource: {Fn::Join: ["", [ "arn:aws:sqs:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":", "${self:custom.processQueueName.${self:provider.stage}}" ]]}
 
 functions:
   imageDownloader:
     handler: handler.imageDownloader
     environment:
       REGION: { "Ref": "AWS::Region" }
-      PROCESS_SQS_QUEUE_NAME: ${self:custom.processQueueName}
+      PROCESS_SQS_QUEUE_NAME: ${self:custom.processQueueName.${self:provider.stage}}
 
 custom:
   stages:
     - dev
     - test
   imageDownloaderBucketName: images-downloader-process-${self:provider.stage}
-  processQueueName: process-reporter-${self:provider.stage}-create-source-queue
+  processQueueName:
+    test: process-reporter-test-create-source-queue-${sls:instanceId}
+    dev: process-reporter-dev-create-source-queue
   remover:
     buckets:
       - ${self:custom.imageDownloaderBucketName}
@@ -51,7 +53,7 @@ resources:
       Type: "AWS::SQS::Queue"
       Condition: CreateTestQueue
       Properties:
-        QueueName: ${self:custom.processQueueName}
+        QueueName: ${self:custom.processQueueName.${self:provider.stage}}
         MessageRetentionPeriod: 120
         VisibilityTimeout: 60
 
@@ -102,6 +104,6 @@ resources:
 
   Outputs:
     QueueName:
-      Value: ${self:custom.processQueueName}
+      Value: ${self:custom.processQueueName.${self:provider.stage}}
     BucketName:
       Value: ${self:custom.imageDownloaderBucketName}
