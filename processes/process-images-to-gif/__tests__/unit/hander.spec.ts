@@ -16,7 +16,7 @@ test("Handler reports that the process has started", async () => {
 
   const { MessageBody }: SQS.Types.SendMessageRequest = sqs.sendMessage.mock.calls[0][0] as any;
   expect(JSON.parse(MessageBody)).toMatchObject({
-    id: "Download 0 images",
+    id: expect.any(String),
     name: "Download 0 images",
     timestamp: expect.any(Number),
   });
