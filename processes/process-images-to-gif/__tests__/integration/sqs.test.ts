@@ -49,7 +49,7 @@ describe("SQS deployment", () => {
 
     const parsedBodies = messages.map(({Body}) => JSON.parse(Body!));
     expect(parsedBodies).toMatchObject(expect.arrayContaining([{
-        id: "Download 0 images",
+        id: expect.any(String),
         name: "Download 0 images",
         timestamp: expect.any(Number),
       }])
