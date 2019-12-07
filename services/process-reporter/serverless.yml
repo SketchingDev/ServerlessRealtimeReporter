@@ -38,6 +38,7 @@ custom:
     - dev
     - test
   appSyncName: process-reporter-${self:provider.stage}
+  dynamodbSourceTableName: process-reporter-sources-${self:provider.stage}
   sourceDataSourceName: sources_datasource_${self:provider.stage}
   queueName: process-reporter-${self:provider.stage}-create-source-queue
 
@@ -101,22 +102,10 @@ resources:
         Queues:
           - Ref: CreateSourceQueue
 
-#        Policies:
-#          - PolicyName: "SQS-${self:custom.sourceDataSourceName}-Policy"
-#            PolicyDocument:
-#              Version: "2012-10-17"
-#              Statement:
-#                - Effect: "Allow"
-#                  Action:
-#                    - "sqs:SendMessage"
-#                  Condition:
-#                    StringEquals:
-#                      aws:SourceAccount: !Ref "AWS::AccountId"
-
     SourceTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
-        TableName: 'Sources'
+        TableName: ${self:custom.dynamodbSourceTableName}
         KeySchema:
           - AttributeName: id
             KeyType: HASH
