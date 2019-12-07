@@ -2,10 +2,10 @@
   "name": "realtime-process-reporter",
   "private": true,
   "devDependencies": {
-    "lerna": "^3.6.0",
-    "prettier": "^1.15.3",
-    "tslint": "^5.11.0",
-    "tslint-config-prettier": "^1.17.0"
+    "lerna": "^3.19.0",
+    "prettier": "^1.19.1",
+    "tslint": "^5.20.1",
+    "tslint-config-prettier": "^1.18.0"
   },
   "workspaces": [
     "services/*",
