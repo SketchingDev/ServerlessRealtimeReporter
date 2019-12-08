@@ -9,7 +9,8 @@
   },
   "workspaces": [
     "services/*",
-    "processes/*"
+    "processes/*",
+    "e2e-tests"
   ],
   "scripts": {
     "build": "lerna run build --stream",

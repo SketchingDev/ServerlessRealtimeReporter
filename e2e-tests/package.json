@@ -10,10 +10,8 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@bahmutov/add-typescript-to-cypress": "^2.1.2",
-    "cypress": "^3.3.1",
     "@types/node": "^12.12.14",
-    "typescript": "^3.7.3"
+    "cypress": "^3.3.1"
   },
   "author": "https://github.com/SketchingDev",
   "license": "MIT"

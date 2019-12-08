@@ -1,7 +1,8 @@
 {
   "packages": [
     "services/*",
-    "processes/*"
+    "processes/*",
+    "e2e-tests"
   ],
   "version": "independent",
   "npmClient": "yarn",
