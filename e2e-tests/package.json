@@ -1,0 +1,20 @@
+{
+  "name": "e2e-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "End-to-end tests for the project",
+  "scripts": {
+    "lint": "tslint -c tslint.json '{__tests__}/**/*.ts'",
+    "test:e2e": "jest __tests__/integration/",
+    "cy:open": "cypress open"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@bahmutov/add-typescript-to-cypress": "^2.1.2",
+    "cypress": "^3.3.1",
+    "@types/node": "^12.12.14",
+    "typescript": "^3.7.3"
+  },
+  "author": "https://github.com/SketchingDev",
+  "license": "MIT"
+}
