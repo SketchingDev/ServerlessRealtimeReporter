@@ -2,11 +2,11 @@ import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync/lib";
 import { CloudFormation } from "aws-sdk";
 import "isomorphic-fetch";
 import uuidv4 from "uuid/v4";
-import { createSource } from "../../src/graphql/createSource";
-import { CreateSourceVariables } from "../../src/graphql/createSourceVariables";
+import { createProcess } from "../../src/graphql/createProcess";
+import { CreateProcessVariables } from "../../src/graphql/createProcessVariables";
+import { Process } from "../../src/process";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { waitForSourceInAppSync } from "../waitForSourceInAppSync";
-import { Source } from "../../src/source";
+import { waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
 
 describe("GraphQL deployment", () => {
@@ -14,7 +14,7 @@ describe("GraphQL deployment", () => {
   const stackName = "process-reporter-dev";
 
   let client: AWSAppSyncClient<any>;
-  let sourceVariables: Readonly<CreateSourceVariables>;
+  let createProcessVariables: Readonly<CreateProcessVariables>;
 
   beforeAll(async () => {
     const outputs = await extractServiceOutputs(
@@ -34,43 +34,43 @@ describe("GraphQL deployment", () => {
   });
 
   beforeEach(() => {
-    sourceVariables = {
+    createProcessVariables = {
       id: uuidv4(),
       name: uuidv4(),
       timestamp: new Date().getTime(),
     };
   });
 
-  test("source returned from being created", async () => {
-    const { data } = await client.mutate<{ createSource: Source }, CreateSourceVariables>({
-      variables: { ...sourceVariables },
-      mutation: createSource,
+  test("process returned from being created", async () => {
+    const { data } = await client.mutate<{ createProcess: CreateProcessVariables }, CreateProcessVariables>({
+      variables: { ...createProcessVariables },
+      mutation: createProcess,
       fetchPolicy: "no-cache",
     });
 
     expect(data).toMatchObject({
-      createSource: {
+      createProcess: {
         __typename: "Source",
-        id: sourceVariables.id,
-        name: sourceVariables.name,
-        timestamp: sourceVariables.timestamp,
+        id: createProcessVariables.id,
+        name: createProcessVariables.name,
+        timestamp: createProcessVariables.timestamp,
       },
     });
   });
 
-  test("source created is returned in getAllSources", async () => {
-    await client.mutate<Source, CreateSourceVariables>({
-      variables: { ...sourceVariables },
-      mutation: createSource,
+  test("source created is returned in getAllProcesses", async () => {
+    await client.mutate<Process, CreateProcessVariables>({
+      variables: { ...createProcessVariables },
+      mutation: createProcess,
       fetchPolicy: "no-cache",
     });
 
-    expect(await waitForSourceInAppSync(client, sourceVariables.id)).toMatchObject(
+    expect(await waitForProcessInAppSync(client, createProcessVariables.id)).toMatchObject(
       {
         __typename: "Source",
-        id: sourceVariables.id,
-        name: sourceVariables.name,
-        timestamp: sourceVariables.timestamp,
+        id: createProcessVariables.id,
+        name: createProcessVariables.name,
+        timestamp: createProcessVariables.timestamp,
       });
   });
 });

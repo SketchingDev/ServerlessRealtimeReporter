@@ -2,9 +2,9 @@ import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync/lib";
 import { CloudFormation, SQS } from "aws-sdk";
 import "isomorphic-fetch";
 import uuidv4 from "uuid/v4";
-import { Source } from "../../src/source";
+import { Process } from "../../src/process";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { waitForSourceInAppSync } from "../waitForSourceInAppSync";
+import { waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
 jest.setTimeout(20000);
 
@@ -16,7 +16,7 @@ describe("SQS deployment", () => {
     const sqs = new SQS({ region: "us-east-1" });
     let queueUrl: string;
 
-    let source: Readonly<Source>;
+    let process: Readonly<Process>;
 
     beforeAll(async () => {
         const outputs = await extractServiceOutputs(
@@ -39,27 +39,27 @@ describe("SQS deployment", () => {
     });
 
     beforeEach(() => {
-        source = {
+        process = {
             id: uuidv4(),
             name: uuidv4(),
             timestamp: new Date().getTime(),
         };
     });
 
-    test("source created is returned in getAllSources", async () => {
+    test("process created is returned in getAllProcesses", async () => {
         await sqs
           .sendMessage({
-              MessageBody: JSON.stringify({ ...source }),
+              MessageBody: JSON.stringify({ ...process }),
               QueueUrl: queueUrl,
           })
           .promise();
 
-        expect(await waitForSourceInAppSync(client, source.id)).toMatchObject(
+        expect(await waitForProcessInAppSync(client, process.id)).toMatchObject(
             {
-                __typename: "Source",
-                id: source.id,
-                name: source.name,
-                timestamp: source.timestamp,
+                __typename: "Process",
+                id: process.id,
+                name: process.name,
+                timestamp: process.timestamp,
             });
     });
 });

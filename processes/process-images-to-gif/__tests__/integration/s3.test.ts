@@ -41,7 +41,7 @@ describe("S3 deployment", () => {
     await s3.deleteObjects({ Bucket: bucketName!, Delete: objects}).promise();
   });
 
-  test("source created is returned in getAllSources", async () => {
+  test("source created is returned in getAllProcesses", async () => {
     const objectKey = uuidv4();
     objectsCreated.push(objectKey);
 

@@ -4,10 +4,10 @@ import AJV from "ajv";
 import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync/lib";
 import { SQSEvent, SQSHandler } from "aws-lambda";
 import "isomorphic-fetch";
-import { createSource } from "./src/graphql/createSource";
-import { CreateSourceVariables } from "./src/graphql/createSourceVariables";
-import { Source } from "./src/source";
-import { sourceSchema } from "./src/source.schema";
+import { createProcess } from "./src/graphql/createProcess";
+import { CreateProcessVariables } from "./src/graphql/createProcessVariables";
+import { Process } from "./src/process";
+import { processSchema } from "./src/process.schema";
 
 export interface EnvDependencies {
   REGION:string;
@@ -33,22 +33,22 @@ const dependencies: LaconiaFactory = ({ env } : {env: EnvDependencies}) => ({
 
 export const app = async (event: SQSEvent, { appSync }: AppDependencies) => {
   const mutations = sqs(event).records.map(({body}) => {
-    const source = body as Source;
+    const process = body as Process;
 
     const ajv = new AJV({ allErrors: true });
-    const valid = ajv.validate(sourceSchema, source);
+    const valid = ajv.validate(processSchema, process);
     if (!valid) {
-      console.error("Source object is invalid", ajv.errors);
+      console.error("Process object is invalid", ajv.errors);
       return;
     }
 
-    appSync.mutate<Source, CreateSourceVariables>({
+    appSync.mutate<Process, CreateProcessVariables>({
       variables: {
-        id: source.id,
-        name: source.name,
-        timestamp: source.timestamp
+        id: process.id,
+        name: process.name,
+        timestamp: process.timestamp
       },
-      mutation: createSource,
+      mutation: createProcess,
       fetchPolicy: "no-cache",
     });
   });

@@ -10,7 +10,7 @@ $ serverless graphql-playground
 *Create a Source*
 ```graphql
 mutation {
-  createSource(id: "test-id", name:"This my first source", , timestamp: 1556307929337){
+  createProcess(id: "test-id", name:"This my first source", , timestamp: 1556307929337){
     name,
   }
 }

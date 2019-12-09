@@ -1,6 +1,6 @@
-export const onCreateSource = `
+export const onCreateProcess = `
 subscription{
-  onCreateSource {
+  onCreateProcess {
     id,
     name,
     timestamp

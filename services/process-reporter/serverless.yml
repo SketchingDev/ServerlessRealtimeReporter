@@ -62,7 +62,7 @@ custom:
         response: "getProcess-response-mapping-template.vtl"
       - dataSource: ${self:custom.sourceDataSourceName}
         type: Query
-        field: getAllSources
+        field: getAllProcesses
         request: "getAllProcesses-request-mapping-template.vtl"
         response: "getAllProcesses-response-mapping-template.vtl"
     dataSources:

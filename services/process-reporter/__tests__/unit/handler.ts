@@ -3,15 +3,15 @@ import laconia = require("@laconia/core");
 import AWSAppSyncClient from "aws-appsync/lib";
 import { SQSEvent } from "aws-lambda";
 import { app } from "../../handler";
-import { createSource } from "../../src/graphql/createSource";
-import { Source } from "../../src/source";
+import { createProcess } from "../../src/graphql/createProcess";
+import { Process } from "../../src/process";
 
-test("Handler passes source to GraphQl mutation", async () => {
+test("Handler passes process to GraphQl mutation", async () => {
   const mockAppSync = {
     mutate: jest.fn(),
   };
 
-  const source: Source = { id: "test-id", name: "test-name", timestamp: 123 };
+  const process: Process = { id: "test-id", name: "test-name", timestamp: 123 };
   const sqsEvent: SQSEvent = {
     Records: [
       {
@@ -28,21 +28,21 @@ test("Handler passes source to GraphQl mutation", async () => {
         messageAttributes: {},
         messageId: "",
         receiptHandle: "",
-        body: JSON.stringify(source),
+        body: JSON.stringify(process),
       },
     ],
   };
 
-  const abc = createHandler(mockAppSync as any);
-  await abc(sqsEvent, {} as any, jest.fn());
+  const handler = createHandler(mockAppSync as any);
+  await handler(sqsEvent, {} as any, jest.fn());
 
   expect(mockAppSync.mutate).toHaveBeenCalledWith({
     variables: {
-      id: source.id,
-      name: source.name,
-      timestamp: source.timestamp,
+      id: process.id,
+      name: process.name,
+      timestamp: process.timestamp,
     },
-    mutation: createSource,
+    mutation: createProcess,
     fetchPolicy: "no-cache",
   });
 });

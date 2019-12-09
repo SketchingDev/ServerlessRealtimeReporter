@@ -36,7 +36,7 @@ describe("SQS deployment", () => {
     // await sqs.purgeQueue({ QueueUrl: queueUrl! }).promise();
   // });
 
-  test("source created is returned in getAllSources", async () => {
+  test("source created is returned in getAllProcesses", async () => {
     await lambda
       .invoke({
         FunctionName: lambdaArn!,
