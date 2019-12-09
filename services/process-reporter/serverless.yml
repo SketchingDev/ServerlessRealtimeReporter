@@ -17,11 +17,11 @@ provider:
       Action:
         - sqs:DeleteMessage
         - sqs:ReceiveMessage
-      Resource: { Fn::GetAtt: [ CreateSourceQueue, Arn ] }
+      Resource: { Fn::GetAtt: [ CreateProcessQueue, Arn ] }
 
 functions:
-  sourceCreator:
-    handler: handler.sourceCreator
+  processCreator:
+    handler: handler.processCreator
     environment:
       REGION: { "Ref": "AWS::Region" }
       GRAPHQL_API_URL: { Fn::GetAtt: [GraphQlApi, GraphQLUrl] }
@@ -30,7 +30,7 @@ functions:
       - sqs:
           arn:
             Fn::GetAtt:
-              - CreateSourceQueue
+              - CreateProcessQueue
               - Arn
 
 custom:
@@ -53,29 +53,29 @@ custom:
       - dataSource: ${self:custom.sourceDataSourceName}
         type: Mutation
         field: createSource
-        request: "createSource-request-mapping-template.vtl"
-        response: "createSource-response-mapping-template.vtl"
+        request: "createProcess-request-mapping-template.vtl"
+        response: "createProcess-response-mapping-template.vtl"
       - dataSource: ${self:custom.sourceDataSourceName}
         type: Query
         field: getSource
-        request: "getSource-request-mapping-template.vtl"
-        response: "getSource-response-mapping-template.vtl"
+        request: "getProcess-request-mapping-template.vtl"
+        response: "getProcess-response-mapping-template.vtl"
       - dataSource: ${self:custom.sourceDataSourceName}
         type: Query
         field: getAllSources
-        request: "getAllSources-request-mapping-template.vtl"
-        response: "getAllSources-response-mapping-template.vtl"
+        request: "getAllProcesses-request-mapping-template.vtl"
+        response: "getAllProcesses-response-mapping-template.vtl"
     dataSources:
       - type: AMAZON_DYNAMODB
         name: ${self:custom.sourceDataSourceName}
-        description: "Sources table"
+        description: "Processes table"
         config:
           tableName: { Ref: SourceTable }
           serviceRoleArn: { Fn::GetAtt: [AppSyncDynamoDBServiceRole, Arn] }
 
 resources:
   Resources:
-    CreateSourceQueue:
+    CreateProcessQueue:
       Type: "AWS::SQS::Queue"
       Properties:
         QueueName: ${self:custom.queueName}
@@ -83,7 +83,7 @@ resources:
         VisibilityTimeout: 60
 
 
-    CreateSourceQueuePolicy:
+    CreateProcessQueuePolicy:
       Type: AWS::SQS::QueuePolicy
       Properties:
         PolicyDocument:
@@ -93,14 +93,14 @@ resources:
               Effect: Allow
               Principal: "*"
               Resource: !GetAtt
-                - CreateSourceQueue
+                - CreateProcessQueue
                 - Arn
               Action: "SQS:SendMessage"
               Condition:
                 StringEquals:
                   aws:SourceAccount: !Ref "AWS::AccountId"
         Queues:
-          - Ref: CreateSourceQueue
+          - Ref: CreateProcessQueue
 
     SourceTable:
       Type: 'AWS::DynamoDB::Table'

@@ -56,5 +56,5 @@ export const app = async (event: SQSEvent, { appSync }: AppDependencies) => {
   await Promise.all(mutations);
 };
 
-export const sourceCreator: SQSHandler = laconia(app)
+export const processCreator: SQSHandler = laconia(app)
   .register(dependencies);
