@@ -3,8 +3,8 @@ type Mutation {
 }
 
 type Query {
-	getAllProcesses: [Source]!
-    getProcess(id: ID!): Source
+	getAllProcesses: [Process]!
+    getProcess(id: ID!): Process
 }
 
 type Process {

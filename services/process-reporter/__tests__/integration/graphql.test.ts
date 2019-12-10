@@ -50,7 +50,7 @@ describe("GraphQL deployment", () => {
 
     expect(data).toMatchObject({
       createProcess: {
-        __typename: "Source",
+        __typename: "Process",
         id: createProcessVariables.id,
         name: createProcessVariables.name,
         timestamp: createProcessVariables.timestamp,
@@ -58,7 +58,7 @@ describe("GraphQL deployment", () => {
     });
   });
 
-  test("source created is returned in getAllProcesses", async () => {
+  test("process created is returned in getAllProcesses", async () => {
     await client.mutate<Process, CreateProcessVariables>({
       variables: { ...createProcessVariables },
       mutation: createProcess,
@@ -67,7 +67,7 @@ describe("GraphQL deployment", () => {
 
     expect(await waitForProcessInAppSync(client, createProcessVariables.id)).toMatchObject(
       {
-        __typename: "Source",
+        __typename: "Process",
         id: createProcessVariables.id,
         name: createProcessVariables.name,
         timestamp: createProcessVariables.timestamp,

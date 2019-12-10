@@ -38,9 +38,9 @@ custom:
     - dev
     - test
   appSyncName: process-reporter-${self:provider.stage}
-  dynamodbSourceTableName: process-reporter-sources-${self:provider.stage}
-  sourceDataSourceName: sources_datasource_${self:provider.stage}
-  queueName: process-reporter-${self:provider.stage}-create-source-queue
+  dynamodbProcessTableName: process-reporter-process-${self:provider.stage}
+  processDataSourceName: processes_datasource_${self:provider.stage}
+  queueName: process-reporter-${self:provider.stage}-create-process-queue
 
   webpack:
     webpackConfig: ./webpack.config.js
@@ -50,27 +50,27 @@ custom:
     authenticationType: API_KEY
     serviceRole: "${self:custom.appSyncName}-AppSyncServiceRole"
     mappingTemplates:
-      - dataSource: ${self:custom.sourceDataSourceName}
+      - dataSource: ${self:custom.processDataSourceName}
         type: Mutation
-        field: createSource
+        field: createProcess
         request: "createProcess-request-mapping-template.vtl"
         response: "createProcess-response-mapping-template.vtl"
-      - dataSource: ${self:custom.sourceDataSourceName}
+      - dataSource: ${self:custom.processDataSourceName}
         type: Query
-        field: getSource
+        field: getProcess
         request: "getProcess-request-mapping-template.vtl"
         response: "getProcess-response-mapping-template.vtl"
-      - dataSource: ${self:custom.sourceDataSourceName}
+      - dataSource: ${self:custom.processDataSourceName}
         type: Query
         field: getAllProcesses
         request: "getAllProcesses-request-mapping-template.vtl"
         response: "getAllProcesses-response-mapping-template.vtl"
     dataSources:
       - type: AMAZON_DYNAMODB
-        name: ${self:custom.sourceDataSourceName}
+        name: ${self:custom.processDataSourceName}
         description: "Processes table"
         config:
-          tableName: { Ref: SourceTable }
+          tableName: { Ref: ProcessTable }
           serviceRoleArn: { Fn::GetAtt: [AppSyncDynamoDBServiceRole, Arn] }
 
 resources:
@@ -102,10 +102,10 @@ resources:
         Queues:
           - Ref: CreateProcessQueue
 
-    SourceTable:
+    ProcessTable:
       Type: 'AWS::DynamoDB::Table'
       Properties:
-        TableName: ${self:custom.dynamodbSourceTableName}
+        TableName: ${self:custom.dynamodbProcessTableName}
         KeySchema:
           - AttributeName: id
             KeyType: HASH
@@ -144,8 +144,8 @@ resources:
                     - "dynamodb:Scan"
                     - "dynamodb:UpdateItem"
                   Resource:
-                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/", "${self:custom.dynamodbSourceTableName}" ]]
-                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/", "${self:custom.dynamodbSourceTableName}", "/*" ]]
+                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/", "${self:custom.dynamodbProcessTableName}" ]]
+                    - Fn::Join: ["", [ "arn:aws:dynamodb:", { "Ref": "AWS::Region" }, ":", { Ref: "AWS::AccountId" }, ":table/", "${self:custom.dynamodbProcessTableName}", "/*" ]]
 
   Outputs:
     QueueName:

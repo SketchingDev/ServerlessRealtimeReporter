@@ -1,6 +1,6 @@
 import { SQS } from "aws-sdk";
 import { GetQueueUrlResult } from "aws-sdk/clients/sqs";
-import { Source } from "./source";
+import { Process } from "./process";
 
 export interface ProgressReporter {
   invokedProcess(invocationId: string, invocationName: string): Promise<void>;
@@ -34,12 +34,12 @@ export class SqsProgressReporter implements ProgressReporter {
       throw new Error("Process name must be defined");
     }
 
-    const source: Source = {
+    const process: Process = {
       id: invocationId, name: invocationName, timestamp: Date.now(),
     };
 
     await this.sqs.sendMessage({
-      MessageBody: JSON.stringify(source),
+      MessageBody: JSON.stringify(process),
       QueueUrl: this.queueUrl,
     }).promise();
   }
