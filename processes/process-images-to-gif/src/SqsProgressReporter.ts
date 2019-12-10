@@ -3,7 +3,7 @@ import { GetQueueUrlResult } from "aws-sdk/clients/sqs";
 import { Process } from "./process";
 
 export interface ProgressReporter {
-  invokedProcess(invocationId: string, invocationName: string): Promise<void>;
+  invokedProcess(processInvocationId: string, processInvocationName: string): Promise<void>;
 }
 
 export class SqsProgressReporter implements ProgressReporter {
@@ -14,14 +14,9 @@ export class SqsProgressReporter implements ProgressReporter {
       getQueueUrlResponse = await sqs.getQueueUrl({ QueueName: queueName }).promise();
     } catch (error) {
       throw new Error(`Failed to get URL for queue ${queueName} due to '${error}'`);
-      // if (error.errorType === SqsProgressReporter.NON_EXISTENT_QUEUE_TYPE) {
-      //   throw new Error(`Failed to get URL for queue ${queueName} due to '${error.errorMessage}'`);
-      // }
-      // throw error;
     }
     return new SqsProgressReporter(sqs, getQueueUrlResponse.QueueUrl!);
   }
-  // private static readonly NON_EXISTENT_QUEUE_TYPE = "AWS.SimpleQueueService.NonExistentQueue";
 
   constructor(private sqs: SQS, private queueUrl: string) {
     if (!queueUrl) {
@@ -29,13 +24,13 @@ export class SqsProgressReporter implements ProgressReporter {
     }
   }
 
-  public async invokedProcess(invocationId: string, invocationName: string) {
-    if (!invocationId || !invocationName) {
+  public async invokedProcess(processInvocationId: string, processInvocationName: string) {
+    if (!processInvocationId || !processInvocationName) {
       throw new Error("Process name must be defined");
     }
 
     const process: Process = {
-      id: invocationId, name: invocationName, timestamp: Date.now(),
+      id: processInvocationId, name: processInvocationName, timestamp: Date.now(),
     };
 
     await this.sqs.sendMessage({
