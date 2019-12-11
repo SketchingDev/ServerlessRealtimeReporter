@@ -23,3 +23,10 @@ aws cloudformation update-stack \
   --capabilities CAPABILITY_NAMED_IAM \
   --template-body file://./.github/deployment-user.yml
 ```
+
+
+Get Access Key and Secret Key
+
+```bash
+aws cloudformation describe-stacks --stack-name realtime-deployment-user
+```

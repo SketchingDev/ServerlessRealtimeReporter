@@ -12,7 +12,7 @@ jest.setTimeout(twentySeconds);
 
 describe("Lambda deployment", () => {
     const region = "us-east-1";
-    const stackName = "process-reporter-dev";
+    const stackName = "process-reporter-test";
     let lambdaArn: string| undefined;
 
     let client: AWSAppSyncClient<any>;

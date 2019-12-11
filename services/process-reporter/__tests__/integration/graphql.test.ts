@@ -11,7 +11,7 @@ import { waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
 describe("GraphQL deployment", () => {
   const region = "us-east-1";
-  const stackName = "process-reporter-dev";
+  const stackName = "process-reporter-test";
 
   let client: AWSAppSyncClient<any>;
   let createProcessVariables: Readonly<CreateProcessVariables>;

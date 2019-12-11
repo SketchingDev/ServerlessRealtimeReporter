@@ -10,7 +10,7 @@ jest.setTimeout(20000);
 
 describe("SQS deployment", () => {
     const region = "us-east-1";
-    const stackName = "process-reporter-dev";
+    const stackName = "process-reporter-test";
 
     let client: AWSAppSyncClient<any>;
     const sqs = new SQS({ region: "us-east-1" });
