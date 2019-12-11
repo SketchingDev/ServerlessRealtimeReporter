@@ -1,8 +1,8 @@
 import gql from "graphql-tag";
 
-export const getAllSources = gql(`
+export const getAllProcesses = gql(`
 {
-  getAllSources {
+  getAllProcesses {
     name,
     id,
     timestamp

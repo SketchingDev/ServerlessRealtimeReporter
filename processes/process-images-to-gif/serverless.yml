@@ -32,8 +32,8 @@ custom:
     - test
   imageDownloaderBucketName: images-downloader-process-${self:provider.stage}
   processQueueName:
-    test: process-reporter-test-create-source-queue-${sls:instanceId}
-    dev: process-reporter-dev-create-source-queue
+    test: process-reporter-test-create-process-queue-${sls:instanceId}
+    dev: process-reporter-dev-create-process-queue
   remover:
     buckets:
       - ${self:custom.imageDownloaderBucketName}
@@ -49,7 +49,7 @@ resources:
         - test
 
   Resources:
-    TestSourceQueue:
+    TestProcessQueue:
       Type: "AWS::SQS::Queue"
       Condition: CreateTestQueue
       Properties:
@@ -57,7 +57,7 @@ resources:
         MessageRetentionPeriod: 120
         VisibilityTimeout: 60
 
-    TestSourceQueuePolicy:
+    TestProcessQueuePolicy:
       Type: AWS::SQS::QueuePolicy
       Condition: CreateTestQueue
       Properties:
@@ -68,14 +68,14 @@ resources:
               Effect: Allow
               Principal: "*"
               Resource: !GetAtt
-                - TestSourceQueue
+                - TestProcessQueue
                 - Arn
               Action: "SQS:SendMessage"
               Condition:
                 StringEquals:
                   aws:SourceAccount: !Ref "AWS::AccountId"
         Queues:
-          - Ref: TestSourceQueue
+          - Ref: TestProcessQueue
 
     ProcessS3BucketImageDownloader:
       Type: AWS::S3::Bucket

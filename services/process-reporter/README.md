@@ -7,19 +7,19 @@ $ serverless graphql-playground
 
 ## GraphQL queries
 
-*Create a Source*
+*Create a Process*
 ```graphql
 mutation {
-  createSource(id: "test-id", name:"This my first source", , timestamp: 1556307929337){
+  createProcess(id: "test-id", name:"This my first process", , timestamp: 1556307929337){
     name,
   }
 }
 ```
 
-*Get an individual Source*
+*Get an individual Process*
 ```graphql
 {
-  getSource(id: "test-id") {
+  getProcess(id: "test-id") {
     name,
     id,
     timestamp
@@ -27,11 +27,11 @@ mutation {
 }
 ```
 
-*Get all Sources*
+*Get all Processes*
 ```graphql
 
 {
-  getAllSources {
+  getAllProcesses {
     name,
     id,
     timestamp
@@ -39,10 +39,10 @@ mutation {
 }
 ```
 
-*Subscribe on created Sources*
+*Subscribe on created Processes*
 ```graphql
 subscription {
-  onCreateSource{
+  onCreateProcess{
     id,
     name,
     timestamp

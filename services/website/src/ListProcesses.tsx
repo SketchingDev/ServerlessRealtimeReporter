@@ -2,48 +2,46 @@ import { graphqlOperation } from "aws-amplify";
 import { Connect } from "aws-amplify-react";
 import { distanceInWords } from "date-fns";
 import * as React from "react";
-
-import { Link } from "react-router-dom";
 import { Header, Icon, List } from "semantic-ui-react";
-import { Source } from "./@types/source";
-import { getAllSources as getAllSourcesQuery } from "./graphql/queries";
-import { onCreateSource as onCreateSourceSub } from "./graphql/subscriptions";
+import { Process } from "./@types/process";
+import { getAllProcesses as getAllProcessesQuery } from "./graphql/queries";
+import { onCreateProcess as onCreateProcessSub } from "./graphql/subscriptions";
 
-export class ListSources extends React.Component {
-  private createdSources: { [sourceId: string]: Source } = {};
+export class ListProcesses extends React.Component {
+  private createdProcesses: { [processId: string]: Process } = {};
 
   public render() {
-    const SourceItem = ({ source }: { source: Source }) => (
-      <List.Item key={source.id}>
+    const ProcessItem = ({ process }: { process: Process }) => (
+      <List.Item key={process.id}>
         <List.Icon name="github" size="large" verticalAlign="middle" />
         <List.Content>
           <List.Header>
-            <Link to={`/source/${source.id}`}>{source.name}</Link>
+            {process.name}
           </List.Header>
-          <List.Description as="a">{distanceInWords(Date.now(), new Date(source.timestamp))}</List.Description>
+          <List.Description as="a">{distanceInWords(Date.now(), new Date(process.timestamp))}</List.Description>
         </List.Content>
       </List.Item>
     );
 
-    const SourcesList = ({ sources }: { sources: Source[] }) => (
+    const ProcessList = ({ processes }: { processes: Process[] }) => (
       <List divided={true} relaxed={true}>
-        {sources
+        {processes
           .sort((s1, s2) => s2.timestamp - s1.timestamp)
-          .map(source => (
-            <SourceItem key={source.id} source={source} />
+          .map(process => (
+            <ProcessItem key={process.id} process={process} />
           ))}
       </List>
     );
 
-    const subscriptionMsg = (prev: { listSources: Source[] }, { onCreateSource }: { onCreateSource: Source }) => {
-      this.createdSources[onCreateSource.id] = onCreateSource;
+    const subscriptionMsg = (prev: { listProcesses: Process[] }, { onCreateProcess }: { onCreateProcess: Process }) => {
+      this.createdProcesses[onCreateProcess.id] = onCreateProcess;
       return prev;
     };
 
     return (
       <Connect
-        query={graphqlOperation(getAllSourcesQuery)}
-        subscription={graphqlOperation(onCreateSourceSub)}
+        query={graphqlOperation(getAllProcessesQuery)}
+        subscription={graphqlOperation(onCreateProcessSub)}
         onSubscriptionMsg={subscriptionMsg}
       >
         {({
@@ -51,19 +49,19 @@ export class ListSources extends React.Component {
           loading,
           errors,
         }: {
-          data: { getAllSources: Source[] };
+          data: { getAllProcesses: Process[] };
           loading: any;
           errors: Error[];
         }) => {
           if (errors && errors.length > 0) {
             return <div><h3>Error...</h3>{errors.map(eb => (<p key="{eb.message}">{eb.message}</p>))}</div>;
           }
-          if (loading || !data.getAllSources) {
+          if (loading || !data.getAllProcesses) {
             return <h3>Loading...</h3>;
           }
 
-          const allSources = Object.values(this.createdSources).concat(data.getAllSources);
-          const orderedSources = allSources.sort((s1: Source, s2: Source) => s1.timestamp - s2.timestamp);
+          const allProcesses = Object.values(this.createdProcesses).concat(data.getAllProcesses);
+          const orderedProcesses = allProcesses.sort((s1: Process, s2: Process) => s1.timestamp - s2.timestamp);
 
           return (
             <div>
@@ -74,7 +72,7 @@ export class ListSources extends React.Component {
                   <Header.Subheader>View all processes</Header.Subheader>
                 </Header.Content>
               </Header>
-              <SourcesList sources={orderedSources} />
+              <ProcessList processes={orderedProcesses} />
             </div>
           );
         }}

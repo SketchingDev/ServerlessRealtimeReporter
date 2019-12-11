@@ -1,21 +1,21 @@
 type Mutation {
-	createSource(id: ID!, name: String!, timestamp: AWSTimestamp!): Source!
+	createProcess(id: ID!, name: String!, timestamp: AWSTimestamp!): Process!
 }
 
 type Query {
-	getAllSources: [Source]!
-    getSource(id: ID!): Source
+	getAllProcesses: [Process]!
+    getProcess(id: ID!): Process
 }
 
-type Source {
+type Process {
 	id: ID!
 	name: String!
 	timestamp: AWSTimestamp!
 }
 
 type Subscription {
-	onCreateSource: Source
-	@aws_subscribe(mutations: ["createSource"])
+	onCreateProcess: Process
+	@aws_subscribe(mutations: ["createProcess"])
 }
 
 schema {

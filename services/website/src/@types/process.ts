@@ -1,5 +1,5 @@
 // tslint:disable-next-line:interface-name
-export interface Source {
+export interface Process {
     id: string;
     name: string;
     timestamp: number;

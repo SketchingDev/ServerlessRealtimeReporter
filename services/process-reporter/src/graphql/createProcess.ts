@@ -1,8 +1,8 @@
 import gql from "graphql-tag";
 
-export const createSource = gql(`
-mutation createSource($id: ID! $name: String! $timestamp: AWSTimestamp!) {
-    createSource(
+export const createProcess = gql(`
+mutation createProcess($id: ID! $name: String! $timestamp: AWSTimestamp!) {
+    createProcess(
       id: $id
       name: $name
       timestamp: $timestamp

@@ -1,6 +1,6 @@
-export const getAllSources = `
+export const getAllProcesses = `
   query {
-    getAllSources {
+    getAllProcesses {
       id
       name
       timestamp

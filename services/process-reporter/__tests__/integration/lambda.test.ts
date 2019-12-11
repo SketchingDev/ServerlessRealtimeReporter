@@ -3,21 +3,21 @@ import { SQSEvent } from "aws-lambda";
 import { CloudFormation, Lambda } from "aws-sdk";
 import "isomorphic-fetch";
 import uuidv4 from "uuid/v4";
-import { Source } from "../../src/source";
+import { Process } from "../../src/process";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { waitForSourceInAppSync } from "../waitForSourceInAppSync";
+import { waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
 const twentySeconds = 20 * 1000;
 jest.setTimeout(twentySeconds);
 
 describe("Lambda deployment", () => {
     const region = "us-east-1";
-    const stackName = "process-reporter-dev";
+    const stackName = "process-reporter-test";
     let lambdaArn: string| undefined;
 
     let client: AWSAppSyncClient<any>;
     const lambda = new Lambda({region});
-    let source: Readonly<Source>;
+    let process: Readonly<Process>;
 
     beforeAll(async () => {
         const outputs = await extractServiceOutputs(
@@ -39,14 +39,14 @@ describe("Lambda deployment", () => {
     });
 
     beforeEach(() => {
-        source = {
+        process = {
             id: uuidv4(),
             name: uuidv4(),
             timestamp: new Date().getTime(),
         };
     });
 
-    test("source created is returned in getAllSources", async () => {
+    test("process created is returned in getAllProcesses", async () => {
         const sqsEvent: SQSEvent = {
             Records: [
                 {
@@ -63,7 +63,7 @@ describe("Lambda deployment", () => {
                     messageAttributes: {},
                     messageId: "",
                     receiptHandle: "",
-                    body: JSON.stringify(source) }
+                    body: JSON.stringify(process) }
             ]
         };
 
@@ -74,12 +74,12 @@ describe("Lambda deployment", () => {
             })
             .promise();
 
-        expect(await waitForSourceInAppSync(client, source.id)).toMatchObject(
+        expect(await waitForProcessInAppSync(client, process.id)).toMatchObject(
             {
-                __typename: "Source",
-                id: source.id,
-                name: source.name,
-                timestamp: source.timestamp,
+                __typename: "Process",
+                id: process.id,
+                name: process.name,
+                timestamp: process.timestamp,
             });
     });
 });

@@ -38,7 +38,7 @@ export const extractServiceOutputs = async (cloudFormation: CloudFormation, stac
                         case "GraphQlApiKeyDefault":
                             graphQl.key = o.OutputValue;
                             break;
-                        case "SourceCreatorLambdaFunctionQualifiedArn":
+                        case "ProcessCreatorLambdaFunctionQualifiedArn":
                             lambda.arn = o.OutputValue;
                             break;
                     }
