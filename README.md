@@ -8,25 +8,13 @@
   * Sub-tasks
     * The success of the invocation is dependent on these sub-tasks succeeding
 
-## Create user for deploying
+## Using a restricted deployment user
 
-```bash
-# Create user
-aws cloudformation create-stack \
-  --stack-name realtime-deployment-user \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --template-body file://./.github/deployment-user.yml
-
-# Update user
-aws cloudformation update-stack \
-  --stack-name realtime-deployment-user \
-  --capabilities CAPABILITY_NAMED_IAM \
-  --template-body file://./.github/deployment-user.yml
-```
+This solution can be deployed with a user that only has the necessary permissions. See the
+[README for more details](.github/README.md) for more details.
 
 
-Get Access Key and Secret Key
+## Improvements
 
-```bash
-aws cloudformation describe-stacks --stack-name realtime-deployment-user
-```
+* Using queries in place of scans for DynamoDB
+* Using pagination

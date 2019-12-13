@@ -4,7 +4,7 @@ import uuidv4 from "uuid/v4";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForMessagesInSqs } from "../waitForSourceInSqs";
 
-jest.setTimeout(20000);
+jest.setTimeout(20 * 1000);
 
 describe("S3 deployment", () => {
   const queueNameCloudFormationOutputKey = "QueueName";
@@ -41,7 +41,7 @@ describe("S3 deployment", () => {
     await s3.deleteObjects({ Bucket: bucketName!, Delete: objects}).promise();
   });
 
-  test("source created is returned in getAllProcesses", async () => {
+  test("source created is returned in getAllProcessesQuery", async () => {
     const objectKey = uuidv4();
     objectsCreated.push(objectKey);
 

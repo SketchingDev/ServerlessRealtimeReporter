@@ -1,18 +1,8 @@
 {
-    "extends": [
-        "tslint:recommended",
-        "tslint-config-prettier"
-    ],
-    "rules": {
-        "object-literal-sort-keys": false,
-        "interface-name" : [true, "never-prefix"],
-        "no-console": [
-            true,
-            "debug",
-            "info",
-            "time",
-            "timeEnd",
-            "trace"
-        ]
-    }
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "rules": {
+    "object-literal-sort-keys": false,
+    "interface-name": [true, "never-prefix"],
+    "no-console": [true, "debug", "info", "time", "timeEnd", "trace"]
+  }
 }

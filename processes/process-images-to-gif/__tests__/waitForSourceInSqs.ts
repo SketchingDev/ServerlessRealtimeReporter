@@ -6,7 +6,6 @@ export const waitForMessagesInSqs = async (sqs: SQS, queueUrl: string): Promise<
   await pRetry(async () => {
     const { Messages } = await sqs.receiveMessage({ QueueUrl: queueUrl }).promise();
 
-
     expect(Messages).toBeDefined();
     expect(Messages!.length).toBeGreaterThanOrEqual(1);
     messages = Messages!;

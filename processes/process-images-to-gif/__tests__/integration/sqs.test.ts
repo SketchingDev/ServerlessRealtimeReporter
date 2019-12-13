@@ -3,7 +3,7 @@ import "isomorphic-fetch";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForMessagesInSqs } from "../waitForSourceInSqs";
 
-jest.setTimeout(20000);
+jest.setTimeout(20 * 1000);
 
 describe("SQS deployment", () => {
   const queueNameCloudFormationOutputKey = "QueueName";
@@ -36,7 +36,7 @@ describe("SQS deployment", () => {
     // await sqs.purgeQueue({ QueueUrl: queueUrl! }).promise();
   // });
 
-  test("source created is returned in getAllProcesses", async () => {
+  test("source created is returned in getAllProcessesQuery", async () => {
     await lambda
       .invoke({
         FunctionName: lambdaArn!,

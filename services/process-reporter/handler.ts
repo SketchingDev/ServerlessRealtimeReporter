@@ -4,10 +4,11 @@ import AJV from "ajv";
 import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync/lib";
 import { SQSEvent, SQSHandler } from "aws-lambda";
 import "isomorphic-fetch";
-import { createProcess } from "./src/graphql/createProcess";
+import { CreateProcessCommand } from "./src/commands/createProcessCommand";
+import { createProcessCommandSchema } from "./src/commands/createProcessCommand.schema";
+import { createProcessMutation } from "./src/graphql/createProcessMutation";
 import { CreateProcessVariables } from "./src/graphql/createProcessVariables";
 import { Process } from "./src/process";
-import { processSchema } from "./src/process.schema";
 
 export interface EnvDependencies {
   REGION:string;
@@ -31,28 +32,27 @@ const dependencies: LaconiaFactory = ({ env } : {env: EnvDependencies}) => ({
   })
 });
 
-export const app = async (event: SQSEvent, { appSync }: AppDependencies) => {
-  const mutations = sqs(event).records.map(({body}) => {
-    const process = body as Process;
+const createProcess = (appSync: AWSAppSyncClient<any>, command: CreateProcessCommand) => {
+  const ajv = new AJV({ allErrors: true });
+  const valid = ajv.validate(createProcessCommandSchema, command);
+  if (!valid) {
+    console.error("Create Process Command is invalid", ajv.errors);
+    return;
+  }
 
-    const ajv = new AJV({ allErrors: true });
-    const valid = ajv.validate(processSchema, process);
-    if (!valid) {
-      console.error("Process object is invalid", ajv.errors);
-      return;
-    }
-
-    appSync.mutate<Process, CreateProcessVariables>({
-      variables: {
-        id: process.id,
-        name: process.name,
-        timestamp: process.timestamp
-      },
-      mutation: createProcess,
-      fetchPolicy: "no-cache",
-    });
+  return appSync.mutate<Process, CreateProcessVariables>({
+    variables: {
+      id: command.id,
+      name: command.name,
+      timestamp: command.timestamp
+    },
+    mutation: createProcessMutation,
+    fetchPolicy: "no-cache",
   });
+};
 
+export const app = async (event: SQSEvent, { appSync }: AppDependencies) => {
+  const mutations = sqs(event).records.map(({body}) => createProcess(appSync, body as CreateProcessCommand));
   await Promise.all(mutations);
 };
 
