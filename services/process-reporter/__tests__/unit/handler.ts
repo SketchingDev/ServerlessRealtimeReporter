@@ -1,50 +1,92 @@
 // @ts-ignore
 import laconia = require("@laconia/core");
 import AWSAppSyncClient from "aws-appsync/lib";
-import { SQSEvent } from "aws-lambda";
-import { app } from "../../handler";
-import { CreateProcessCommand } from "../../src/commands/createProcessCommand";
-import { createProcessMutation } from "../../src/graphql/createProcessMutation";
+import { Handler } from "aws-lambda";
+import { app, Logger } from "../../handler";
+import { CreateProcessCommand } from "../../src/commands/createProcess/createProcessCommand";
+import { createProcessMutation } from "../../src/commands/createProcess/graphql/createProcessMutation";
+import { CreateTaskCommand } from "../../src/commands/createTask/createTaskCommand";
+import { addTaskMutation } from "../../src/commands/createTask/graphql/addTaskMutation";
+import { createSqsEvent } from "../createSqsEvent";
 
-test("Handler passes process to GraphQl mutation", async () => {
-  const mockAppSync = {
-    mutate: jest.fn(),
-  };
+describe("CreateProcessCommand", () => {
+  let handler: Handler;
+  let mockAppSync: Pick<AWSAppSyncClient<any>, "mutate">;
+  let mockLogger: Logger;
 
-  const createProcessCommand: CreateProcessCommand = { id: "test-id", name: "test-name", timestamp: 123 };
-  const sqsEvent: SQSEvent = {
-    Records: [
-      {
-        attributes: {
-          ApproximateFirstReceiveTimestamp: "",
-          ApproximateReceiveCount: "",
-          SenderId: "",
-          SentTimestamp: "",
-        },
-        awsRegion: "",
-        eventSource: "",
-        eventSourceARN: "",
-        md5OfBody: "",
-        messageAttributes: {},
-        messageId: "",
-        receiptHandle: "",
-        body: JSON.stringify(createProcessCommand),
-      },
-    ],
-  };
+  beforeEach(() => {
+    mockAppSync = {
+      mutate: jest.fn(),
+    };
+    mockLogger = {
+      error: jest.fn(),
+      info: jest.fn(),
+    };
 
-  const handler = createHandler(mockAppSync as any);
-  await handler(sqsEvent, {} as any, jest.fn());
-
-  expect(mockAppSync.mutate).toHaveBeenCalledWith({
-    variables: {
-      id: createProcessCommand.id,
-      name: createProcessCommand.name,
-      timestamp: createProcessCommand.timestamp,
-    },
-    mutation: createProcessMutation,
-    fetchPolicy: "no-cache",
+    handler = laconia(app).register(() => ({ appSync: mockAppSync, logger: mockLogger }));
   });
-});
 
-const createHandler = (appSync: AWSAppSyncClient<any>) => laconia(app).register(() => ({ appSync }));
+  test("Handler calls GraphQL mutation for creating process", async () => {
+    const createProcessCommand: CreateProcessCommand = {
+      commandType: "create-process",
+      id: "test-id",
+      name: "test-name",
+      timestamp: 123,
+    };
+    await handler(createSqsEvent({...createProcessCommand}), {} as any, jest.fn());
+
+    expect(mockAppSync.mutate).toHaveBeenCalledWith({
+      variables: {
+        id: createProcessCommand.id,
+        name: createProcessCommand.name,
+        timestamp: createProcessCommand.timestamp,
+      },
+      mutation: createProcessMutation,
+      fetchPolicy: "no-cache",
+    });
+  });
+
+  test("Handler calls GraphQL mutation for creating task", async () => {
+    const createTaskCommand: CreateTaskCommand = {
+      commandType: "create-task",
+      processId: "123",
+      id: "test-id",
+      name: "test-name",
+      createdTimestamp: 345
+    };
+    await handler(createSqsEvent({...createTaskCommand}), {} as any, jest.fn());
+
+    expect(mockAppSync.mutate).toHaveBeenCalledWith({
+      variables: {
+        id: createTaskCommand.id,
+        name: createTaskCommand.name,
+        processId: createTaskCommand.processId,
+        created: createTaskCommand.createdTimestamp,
+      },
+      mutation: addTaskMutation,
+      fetchPolicy: "no-cache",
+    });
+  });
+
+  test("Handler logs out invalid command", async () => {
+    const invalidCommand: CreateProcessCommand = {
+      commandType: "create-process",
+      id: "",
+      name: undefined as any,
+      timestamp: 0,
+    };
+
+    await handler(createSqsEvent({...invalidCommand}), {} as any, jest.fn());
+    expect(mockLogger.error).toHaveBeenCalledWith("Create Process Command is invalid", [
+      {
+        dataPath: "",
+        keyword: "required",
+        message: "should have required property 'name'",
+        params: { missingProperty: "name" },
+        schemaPath: "#/required",
+      },
+    ]);
+  });
+
+
+});

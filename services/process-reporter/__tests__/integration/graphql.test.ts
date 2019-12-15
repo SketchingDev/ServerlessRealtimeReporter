@@ -2,10 +2,10 @@ import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync/lib";
 import { CloudFormation } from "aws-sdk";
 import "isomorphic-fetch";
 import uuidv4 from "uuid/v4";
-import { addTaskMutation } from "../../src/graphql/addTaskMutation";
-import { AddTaskVariables } from "../../src/graphql/addTaskVariables";
-import { createProcessMutation } from "../../src/graphql/createProcessMutation";
-import { CreateProcessVariables } from "../../src/graphql/createProcessVariables";
+import { createProcessMutation } from "../../src/commands/createProcess/graphql/createProcessMutation";
+import { CreateProcessVariables } from "../../src/commands/createProcess/graphql/createProcessVariables";
+import { addTaskMutation } from "../../src/commands/createTask/graphql/addTaskMutation";
+import { AddTaskVariables } from "../../src/commands/createTask/graphql/addTaskVariables";
 import { Task } from "../../src/task";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import {
@@ -43,7 +43,7 @@ describe("GraphQL deployment", () => {
     createProcessVariables = {
       id: uuidv4(),
       name: uuidv4(),
-      timestamp: new Date().getTime(),
+      timestamp: Date.now(),
     };
   });
 
@@ -82,7 +82,7 @@ describe("GraphQL deployment", () => {
       });
   });
 
-  test("process created with tasks is returned in getAllProcesses", async () => {
+  test("process with task created is returned in getAllProcesses", async () => {
     await client.mutate<{ createProcess: CreateProcessVariables }, CreateProcessVariables>({
       variables: { ...createProcessVariables },
       mutation: createProcessMutation,

@@ -5,11 +5,17 @@ export const createProcessCommandSchema = {
   "type": "object",
   "title": "The Root Schema",
   "required": [
+    "commandType",
     "id",
     "name",
     "timestamp"
   ],
   "properties": {
+    "commandType": {
+      "$id": "#/properties/commandType",
+      "const": "create-process",
+      "title": "The Command Type Schema",
+    },
     "id": {
       "$id": "#/properties/id",
       "type": "string",

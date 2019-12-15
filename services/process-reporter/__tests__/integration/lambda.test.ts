@@ -1,14 +1,14 @@
 import AWSAppSyncClient, { AUTH_TYPE } from "aws-appsync/lib";
-import { SQSEvent } from "aws-lambda";
 import { CloudFormation, Lambda } from "aws-sdk";
 import "isomorphic-fetch";
 import uuidv4 from "uuid/v4";
-import { CreateProcessCommand } from "../../src/commands/createProcessCommand";
+import { CreateProcessCommand } from "../../src/commands/createProcess/createProcessCommand";
+import { CreateTaskCommand } from "../../src/commands/createTask/createTaskCommand";
+import { createSqsEvent } from "../createSqsEvent";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { and, hasProcessId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { and, hasProcessId, hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-const twentySeconds = 20 * 1000;
-jest.setTimeout(twentySeconds);
+jest.setTimeout(20 * 1000);
 
 describe("Lambda deployment", () => {
   const region = "us-east-1";
@@ -37,47 +37,67 @@ describe("Lambda deployment", () => {
 
   beforeEach(() => {
     createProcessCommand = {
+      commandType: "create-process",
       id: uuidv4(),
       name: uuidv4(),
-      timestamp: new Date().getTime(),
+      timestamp: Date.now(),
     };
   });
 
   test("process created is returned in getAllProcessesQuery", async () => {
-    const sqsEvent: SQSEvent = {
-      Records: [
-        {
-          attributes: {
-            ApproximateFirstReceiveTimestamp: "",
-            ApproximateReceiveCount: "",
-            SenderId: "",
-            SentTimestamp: "",
-          },
-          awsRegion: "",
-          eventSource: "",
-          eventSourceARN: "",
-          md5OfBody: "",
-          messageAttributes: {},
-          messageId: "",
-          receiptHandle: "",
-          body: JSON.stringify(createProcessCommand),
-        },
-      ],
-    };
-
     await lambda
       .invoke({
         FunctionName: lambdaArn!,
-        Payload: JSON.stringify(sqsEvent),
+        Payload: JSON.stringify(createSqsEvent([{ ...createProcessCommand }])),
       })
       .promise();
 
-    const process = await waitForProcessInAppSync(client, and(hasProcessId(createProcessCommand.id)));
+    const process = await waitForProcessInAppSync(client, hasProcessId(createProcessCommand.id));
     expect(process).toMatchObject({
       __typename: "Process",
       id: createProcessCommand.id,
       name: createProcessCommand.name,
       timestamp: createProcessCommand.timestamp,
+    });
+  });
+
+  test("process with task created is returned in getAllProcesses", async () => {
+    const createTaskCommand: CreateTaskCommand = {
+      commandType: "create-task",
+      createdTimestamp: Date.now(),
+      id: uuidv4(),
+      name: uuidv4(),
+      processId: createProcessCommand.id,
+    };
+
+    await lambda
+      .invoke({
+        FunctionName: lambdaArn!,
+        Payload: JSON.stringify(createSqsEvent([{ ...createProcessCommand }, { ...createTaskCommand }])),
+      })
+      .promise();
+
+    const process = await waitForProcessInAppSync(
+      client,
+      and(hasProcessId(createProcessCommand.id), hasTaskId(createTaskCommand.id)),
+    );
+    expect(process).toStrictEqual({
+      __typename: "Process",
+      id: createProcessCommand.id,
+      name: createProcessCommand.name,
+      timestamp: createProcessCommand.timestamp,
+      tasks: [
+        {
+          __typename: "Task",
+          created: createTaskCommand.createdTimestamp,
+          failureReason: null,
+          id: createTaskCommand.id,
+          name: createTaskCommand.name,
+          processId: createProcessCommand.id,
+          status: "PENDING",
+          updated: createTaskCommand.createdTimestamp,
+        },
+      ],
     });
   });
 });
