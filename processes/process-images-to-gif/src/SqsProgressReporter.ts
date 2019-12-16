@@ -73,7 +73,7 @@ export class SqsProgressReporter implements ProgressReporter {
 
   public async invokedProcessTask(task: Task) {
     if (!task.parentProcess || !task.parentProcess.id || !task.name) {
-      throw new Error("Task's parent process must be defined with an ID and task must have a name");
+      throw new Error("Task's parent process must be defined with an ID and the task must have a name");
     }
 
     const createTaskCommand: CreateTaskCommand = {

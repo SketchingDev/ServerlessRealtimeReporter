@@ -12,13 +12,23 @@ test("Handler reports that the process has started", async () => {
   const handler = createHandler(new SqsProgressReporter(sqs, "queueUrl"));
   await handler({} as any, {} as any, jest.fn());
 
-  expect(sqs.sendMessage).toHaveBeenCalledTimes(1);
+  expect(sqs.sendMessage).toHaveBeenCalledTimes(2);
 
-  const { MessageBody }: SQS.Types.SendMessageRequest = sqs.sendMessage.mock.calls[0][0] as any;
-  expect(JSON.parse(MessageBody)).toMatchObject({
+  const createProcessCall: SQS.Types.SendMessageRequest = sqs.sendMessage.mock.calls[0][0] as any;
+  expect(JSON.parse(createProcessCall.MessageBody)).toStrictEqual({
+    commandType: "create-process",
     id: expect.any(String),
     name: "Download 0 images",
     timestamp: expect.any(Number),
+  });
+
+  const createTaskCall: SQS.Types.SendMessageRequest = sqs.sendMessage.mock.calls[1][0] as any;
+  expect(JSON.parse(createTaskCall.MessageBody)).toStrictEqual({
+    commandType: "create-task",
+    id: expect.any(String),
+    name: "Downloading image 1",
+    processId: expect.any(String),
+    createdTimestamp: expect.any(Number),
   });
 });
 
