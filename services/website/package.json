@@ -17,7 +17,8 @@
     "start": "react-scripts-ts start",
     "build": "react-scripts-ts build",
     "test": "CI=true react-scripts-ts test --env=jsdom",
-    "eject": "react-scripts-ts eject"
+    "eject": "react-scripts-ts eject",
+    "generate-env:dev": "node build-env.js > .env.local"
   },
   "devDependencies": {
     "@types/jest": "^24.0.6",
