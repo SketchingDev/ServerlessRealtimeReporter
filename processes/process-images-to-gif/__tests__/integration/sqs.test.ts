@@ -8,6 +8,7 @@ jest.setTimeout(20 * 1000);
 describe("SQS deployment", () => {
   const queueNameCloudFormationOutputKey = "QueueName";
   const lambdaArnCloudFormationOutputKey = "ImageDownloaderLambdaFunctionQualifiedArn";
+  const twoMessagesExpected = 2;
 
   const region = "us-east-1";
   const stackName = "process-images-to-gif-test";
@@ -44,15 +45,23 @@ describe("SQS deployment", () => {
       })
       .promise();
 
-    const messages = await waitForMessagesInSqs(sqs, queueUrl!);
+    const messages = await waitForMessagesInSqs(sqs, queueUrl!, twoMessagesExpected);
     expect(messages).toBeDefined();
 
     const parsedBodies = messages.map(({Body}) => JSON.parse(Body!));
     expect(parsedBodies).toMatchObject(expect.arrayContaining([{
+        commandType: "create-process",
         id: expect.any(String),
         name: "Download 0 images",
         timestamp: expect.any(Number),
-      }])
+      },
+        {
+          commandType: "create-task",
+          id: expect.any(String),
+          name: "Downloading image 1",
+          processId: expect.any(String),
+          createdTimestamp: expect.any(Number),
+        }])
       );
   });
 });
