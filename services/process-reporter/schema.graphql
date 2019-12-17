@@ -1,5 +1,7 @@
 type Mutation {
 	createProcess(id: ID!, name: String!, timestamp: AWSTimestamp!): Process!
+	addTask(id: String!, processId: ID!, name: String! created: AWSTimestamp!): Task!
+	updateTask(id: ID!, updated: AWSTimestamp!, status: TaskStatus!, failureReason: String): Task!
 }
 
 type Query {
@@ -7,15 +9,34 @@ type Query {
     getProcess(id: ID!): Process
 }
 
+enum TaskStatus {
+	PENDING,
+	SUCCESS,
+	FAILURE
+}
+
 type Process {
 	id: ID!
 	name: String!
 	timestamp: AWSTimestamp!
+	tasks: [Task]!
+}
+
+type Task {
+	id: String!
+	processId: ID!
+	name: String
+	created: AWSTimestamp!
+	updated: AWSTimestamp!
+	status: TaskStatus!
+	failureReason: String
 }
 
 type Subscription {
 	onCreateProcess: Process
 	@aws_subscribe(mutations: ["createProcess"])
+	onAddOrUpdateTask: Task
+	@aws_subscribe(mutations: ["addTask", "updateTask"])
 }
 
 schema {

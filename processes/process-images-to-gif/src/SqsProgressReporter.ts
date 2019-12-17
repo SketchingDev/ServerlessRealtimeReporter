@@ -1,13 +1,40 @@
 import { SQS } from "aws-sdk";
 import { GetQueueUrlResult } from "aws-sdk/clients/sqs";
-import { Process } from "./process";
 
 export interface ProgressReporter {
-  invokedProcess(processInvocationId: string, processInvocationName: string): Promise<void>;
+  invokedProcess(process: NamedProcess): Promise<void>;
 }
 
-export class SqsProgressReporter implements ProgressReporter {
+export interface NamedProcess extends Process {
+  name: string;
+}
 
+export interface Process {
+  id: string;
+}
+
+export interface Task {
+  parentProcess: Process;
+  name: string;
+}
+
+interface CreateProcessCommand {
+  commandType: "create-process",
+  id: string;
+  name: string;
+  timestamp: number;
+}
+
+interface CreateTaskCommand {
+  commandType: "create-task";
+  id: string;
+  name: string;
+  processId: string;
+  createdTimestamp: number;
+}
+
+
+export class SqsProgressReporter implements ProgressReporter {
   public static async createFromQueueName(sqs: SQS, queueName: string) {
     let getQueueUrlResponse: GetQueueUrlResult;
     try {
@@ -24,18 +51,44 @@ export class SqsProgressReporter implements ProgressReporter {
     }
   }
 
-  public async invokedProcess(processInvocationId: string, processInvocationName: string) {
-    if (!processInvocationId || !processInvocationName) {
+  public async invokedProcess(process: NamedProcess) {
+    if (!process.id || !process.name) {
       throw new Error("Process name must be defined");
     }
 
-    const process: Process = {
-      id: processInvocationId, name: processInvocationName, timestamp: Date.now(),
+    const createProcessCommand: CreateProcessCommand = {
+      commandType: "create-process",
+      id: process.id,
+      name: process.name,
+      timestamp: Date.now(),
     };
 
-    await this.sqs.sendMessage({
-      MessageBody: JSON.stringify(process),
-      QueueUrl: this.queueUrl,
-    }).promise();
+    await this.sqs
+      .sendMessage({
+        MessageBody: JSON.stringify(createProcessCommand),
+        QueueUrl: this.queueUrl,
+      })
+      .promise();
+  }
+
+  public async invokedProcessTask(task: Task) {
+    if (!task.parentProcess || !task.parentProcess.id || !task.name) {
+      throw new Error("Task's parent process must be defined with an ID and the task must have a name");
+    }
+
+    const createTaskCommand: CreateTaskCommand = {
+      commandType: "create-task",
+      processId: task.parentProcess.id,
+      id: task.parentProcess.id,
+      name: task.name,
+      createdTimestamp: Date.now(),
+    };
+
+    await this.sqs
+      .sendMessage({
+        MessageBody: JSON.stringify(createTaskCommand),
+        QueueUrl: this.queueUrl,
+      })
+      .promise();
   }
 }

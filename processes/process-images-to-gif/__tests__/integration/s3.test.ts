@@ -4,9 +4,11 @@ import uuidv4 from "uuid/v4";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForMessagesInSqs } from "../waitForSourceInSqs";
 
-jest.setTimeout(20000);
+jest.setTimeout(20 * 1000);
 
 describe("S3 deployment", () => {
+  const twoMessagesExpected = 2;
+
   const queueNameCloudFormationOutputKey = "QueueName";
   const bucketNameCloudFormationOutputKey = "BucketName";
 
@@ -41,21 +43,22 @@ describe("S3 deployment", () => {
     await s3.deleteObjects({ Bucket: bucketName!, Delete: objects}).promise();
   });
 
-  test("source created is returned in getAllProcesses", async () => {
+  test("source created is returned in getAllProcessesQuery", async () => {
     const objectKey = uuidv4();
     objectsCreated.push(objectKey);
 
     await s3.putObject({ Bucket: bucketName!, Key: objectKey, Body: "TestBody" })
       .promise();
 
-    const messages = await waitForMessagesInSqs(sqs, queueUrl!);
+    const messages = await waitForMessagesInSqs(sqs, queueUrl!, twoMessagesExpected);
     expect(messages).toBeDefined();
 
     const parsedBodies = messages.map(({ Body }) => JSON.parse(Body!));
     expect(parsedBodies).toMatchObject(expect.arrayContaining([{
-        id: expect.any(String),
-        name: "Download 0 images",
-        timestamp: expect.any(Number),
+      commandType: "create-process",
+      id: expect.any(String),
+      name: "Download 0 images",
+      timestamp: expect.any(Number),
       }]),
     );
   });

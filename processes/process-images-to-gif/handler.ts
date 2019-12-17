@@ -37,7 +37,10 @@ export const app = async (event: S3CreateEvent, { progressReporter }: AppDepende
   // });
   //
   // await Promise.all(progresses);
-  await progressReporter.invokedProcess(`${Date.now()}`, 'Download 0 images');
+  const process = {id: `${Date.now()}`, name: 'Download 0 images'};
+  const task = {id: `${Date.now()}`, name: "Downloading image 1", parentProcess: { id: process.id }};
+  await progressReporter.invokedProcess(process);
+  await progressReporter.invokedProcessTask(task);
 };
 
 export const imageDownloader: SQSHandler = laconia(app)

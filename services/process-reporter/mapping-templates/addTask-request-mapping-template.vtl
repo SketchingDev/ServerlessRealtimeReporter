@@ -1,0 +1,21 @@
+{
+    "version" : "2017-02-28",
+    "operation" : "UpdateItem",
+    "key" : {
+        "id" : { "S" : "${context.arguments.id}" }
+    },
+    "update" : {
+        "expression" : "SET processId = :processId, #name = :name, created = :created, updated = if_not_exists(updated, :updated), #status = if_not_exists(#status, :status)",
+        "expressionNames": {
+            "#name" : "name",
+            "#status" : "status"
+        },
+        "expressionValues" : {
+            ":processId" : { "S" : "${context.arguments.processId}" },
+            ":name" : { "S" : "${context.arguments.name}" },
+            ":created" : { "N" : "${context.arguments.created}" },
+            ":updated" : { "N" : "${context.arguments.created}" },
+            ":status": { "S" : "PENDING" }
+        }
+    }
+}

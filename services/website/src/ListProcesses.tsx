@@ -2,10 +2,11 @@ import { graphqlOperation } from "aws-amplify";
 import { Connect } from "aws-amplify-react";
 import { distanceInWords } from "date-fns";
 import * as React from "react";
+import { Link } from "react-router-dom";
 import { Header, Icon, List } from "semantic-ui-react";
 import { Process } from "./@types/process";
-import { getAllProcesses as getAllProcessesQuery } from "./graphql/queries";
-import { onCreateProcess as onCreateProcessSub } from "./graphql/subscriptions";
+import { getAllProcessesQuery } from "./graphql/queries";
+import { onCreateProcessSubscription } from "./graphql/subscriptions";
 
 export class ListProcesses extends React.Component {
   private createdProcesses: { [processId: string]: Process } = {};
@@ -16,7 +17,7 @@ export class ListProcesses extends React.Component {
         <List.Icon name="github" size="large" verticalAlign="middle" />
         <List.Content>
           <List.Header>
-            {process.name}
+            <Link to={`/process/${process.id}`}>{process.name}</Link>
           </List.Header>
           <List.Description as="a">{distanceInWords(Date.now(), new Date(process.timestamp))}</List.Description>
         </List.Content>
@@ -41,7 +42,7 @@ export class ListProcesses extends React.Component {
     return (
       <Connect
         query={graphqlOperation(getAllProcessesQuery)}
-        subscription={graphqlOperation(onCreateProcessSub)}
+        subscription={graphqlOperation(onCreateProcessSubscription)}
         onSubscriptionMsg={subscriptionMsg}
       >
         {({

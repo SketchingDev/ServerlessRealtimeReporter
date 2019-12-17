@@ -1,7 +1,13 @@
 # Process Reporter
 
+The Process Reporter consumes commands from its SQS for managing Processes and their tasks.
+
+* CreateProcessCommand
+
+## Testing
+
 ```bash
-$ yarn deploy
+$ yarn deploy:test
 $ serverless graphql-playground
 ```
 
