@@ -58,7 +58,7 @@ describe("S3 deployment", () => {
       commandType: "create-process",
       id: expect.any(String),
       name: "Download 0 images",
-      timestamp: expect.any(Number),
+      createdTimestamp: expect.any(Number),
       }]),
     );
   });

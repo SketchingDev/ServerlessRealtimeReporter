@@ -19,7 +19,7 @@ test("Handler reports that the process has started", async () => {
     commandType: "create-process",
     id: expect.any(String),
     name: "Download 0 images",
-    timestamp: expect.any(Number),
+    createdTimestamp: expect.any(Number),
   });
 
   const createTaskCall: SQS.Types.SendMessageRequest = sqs.sendMessage.mock.calls[1][0] as any;

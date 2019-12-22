@@ -18,7 +18,7 @@ export const createProcess = (appSync: AWSAppSyncClient<any>, logger: Logger) =>
     variables: {
       id: command.id,
       name: command.name,
-      timestamp: command.timestamp,
+      created: command.createdTimestamp,
     },
     mutation: createProcessMutation,
     fetchPolicy: "no-cache",

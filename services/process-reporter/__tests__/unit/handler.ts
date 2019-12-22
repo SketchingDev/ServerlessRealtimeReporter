@@ -31,7 +31,7 @@ describe("CreateProcessCommand", () => {
       commandType: "create-process",
       id: "test-id",
       name: "test-name",
-      timestamp: 123,
+      createdTimestamp: 123,
     };
     await handler(createSqsEvent({...createProcessCommand}), {} as any, jest.fn());
 
@@ -39,7 +39,7 @@ describe("CreateProcessCommand", () => {
       variables: {
         id: createProcessCommand.id,
         name: createProcessCommand.name,
-        timestamp: createProcessCommand.timestamp,
+        created: createProcessCommand.createdTimestamp,
       },
       mutation: createProcessMutation,
       fetchPolicy: "no-cache",
@@ -73,7 +73,7 @@ describe("CreateProcessCommand", () => {
       commandType: "create-process",
       id: "",
       name: undefined as any,
-      timestamp: 0,
+      createdTimestamp: 0,
     };
 
     await handler(createSqsEvent({...invalidCommand}), {} as any, jest.fn());

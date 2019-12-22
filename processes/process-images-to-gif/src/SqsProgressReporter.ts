@@ -22,7 +22,7 @@ interface CreateProcessCommand {
   commandType: "create-process",
   id: string;
   name: string;
-  timestamp: number;
+  createdTimestamp: number;
 }
 
 interface CreateTaskCommand {
@@ -60,7 +60,7 @@ export class SqsProgressReporter implements ProgressReporter {
       commandType: "create-process",
       id: process.id,
       name: process.name,
-      timestamp: Date.now(),
+      createdTimestamp: Date.now(),
     };
 
     await this.sqs

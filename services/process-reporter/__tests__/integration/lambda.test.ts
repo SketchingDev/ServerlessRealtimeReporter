@@ -40,7 +40,7 @@ describe("Lambda deployment", () => {
       commandType: "create-process",
       id: uuidv4(),
       name: uuidv4(),
-      timestamp: Date.now(),
+      createdTimestamp: Date.now(),
     };
   });
 
@@ -57,7 +57,7 @@ describe("Lambda deployment", () => {
       __typename: "Process",
       id: createProcessCommand.id,
       name: createProcessCommand.name,
-      timestamp: createProcessCommand.timestamp,
+      created: createProcessCommand.createdTimestamp,
     });
   });
 
@@ -85,7 +85,7 @@ describe("Lambda deployment", () => {
       __typename: "Process",
       id: createProcessCommand.id,
       name: createProcessCommand.name,
-      timestamp: createProcessCommand.timestamp,
+      created: createProcessCommand.createdTimestamp,
       tasks: [
         {
           __typename: "Task",

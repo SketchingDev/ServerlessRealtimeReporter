@@ -41,7 +41,7 @@ describe("SQS deployment", () => {
       commandType: "create-process",
       id: uuidv4(),
       name: uuidv4(),
-      timestamp: Date.now(),
+      createdTimestamp: Date.now(),
     };
   });
 
@@ -58,7 +58,7 @@ describe("SQS deployment", () => {
       __typename: "Process",
       id: createProcessCommand.id,
       name: createProcessCommand.name,
-      timestamp: createProcessCommand.timestamp,
+      created: createProcessCommand.createdTimestamp,
     });
   });
 
@@ -89,7 +89,7 @@ describe("SQS deployment", () => {
       __typename: "Process",
       id: createProcessCommand.id,
       name: createProcessCommand.name,
-      timestamp: createProcessCommand.timestamp,
+      created: createProcessCommand.createdTimestamp,
       tasks: [
         {
           __typename: "Task",

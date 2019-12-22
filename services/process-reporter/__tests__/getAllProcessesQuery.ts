@@ -5,7 +5,7 @@ export const getAllProcessesQuery = gql(`
   getAllProcesses {
     id,
     name,
-    timestamp,
+    created,
     tasks {
       id
       processId

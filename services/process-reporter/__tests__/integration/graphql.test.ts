@@ -43,7 +43,7 @@ describe("GraphQL deployment", () => {
     createProcessVariables = {
       id: uuidv4(),
       name: uuidv4(),
-      timestamp: Date.now(),
+      created: Date.now(),
     };
   });
 
@@ -59,7 +59,7 @@ describe("GraphQL deployment", () => {
         __typename: "Process",
         id: createProcessVariables.id,
         name: createProcessVariables.name,
-        timestamp: createProcessVariables.timestamp,
+        created: createProcessVariables.created,
       },
     });
   });
@@ -77,7 +77,7 @@ describe("GraphQL deployment", () => {
         __typename: "Process",
         id: createProcessVariables.id,
         name: createProcessVariables.name,
-        timestamp: createProcessVariables.timestamp,
+        created: createProcessVariables.created,
         tasks: [],
       });
   });
@@ -105,7 +105,7 @@ describe("GraphQL deployment", () => {
         __typename: "Process",
         id: createProcessVariables.id,
         name: createProcessVariables.name,
-        timestamp: createProcessVariables.timestamp,
+        created: createProcessVariables.created,
         tasks: [{
           __typename: "Task",
           created: addTaskVariables.created,

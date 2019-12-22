@@ -8,7 +8,7 @@ export const createProcessCommandSchema = {
     "commandType",
     "id",
     "name",
-    "timestamp"
+    "createdTimestamp"
   ],
   "properties": {
     "commandType": {
@@ -36,8 +36,8 @@ export const createProcessCommandSchema = {
       ],
       "pattern": "^(.*)$"
     },
-    "timestamp": {
-      "$id": "#/properties/timestamp",
+    "createdTimestamp": {
+      "$id": "#/properties/createdTimestamp",
       "type": "integer",
       "title": "The Timestamp Schema",
       "default": 0,
