@@ -1,8 +1,8 @@
 {
-  "name": "process-images-to-gif",
+  "name": "example-process",
   "version": "1.0.0",
   "private": true,
-  "description": "Process that converts a file containing a list of images into a GIF",
+  "description": "An example process",
   "main": "handler.js",
   "scripts": {
     "lint": "tslint -c tslint.json '{__tests__}/**/*.ts'",

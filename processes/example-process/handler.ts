@@ -43,6 +43,6 @@ export const app = async (event: S3CreateEvent, { progressReporter }: AppDepende
   await progressReporter.invokedProcessTask(task);
 };
 
-export const imageDownloader: SQSHandler = laconia(app)
+export const doSomething: SQSHandler = laconia(app)
   .register(awsDependencies)
   .register(appDependencies);

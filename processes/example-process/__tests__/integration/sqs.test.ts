@@ -7,11 +7,11 @@ jest.setTimeout(20 * 1000);
 
 describe("SQS deployment", () => {
   const queueNameCloudFormationOutputKey = "QueueName";
-  const lambdaArnCloudFormationOutputKey = "ImageDownloaderLambdaFunctionQualifiedArn";
+  const lambdaArnCloudFormationOutputKey = "ExampleProcessLambdaFunctionQualifiedArn";
   const twoMessagesExpected = 2;
 
   const region = "us-east-1";
-  const stackName = "process-images-to-gif-test";
+  const stackName = "example-process-test";
 
   const lambda = new Lambda({ region });
   const sqs = new SQS({ region });

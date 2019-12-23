@@ -13,7 +13,7 @@ describe("S3 deployment", () => {
   const bucketNameCloudFormationOutputKey = "BucketName";
 
   const region = "us-east-1";
-  const stackName = "process-images-to-gif-test";
+  const stackName = "example-process-test";
 
   const sqs = new SQS({ region });
   const s3 = new S3({ region });

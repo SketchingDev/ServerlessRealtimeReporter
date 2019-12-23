@@ -48,6 +48,7 @@ export const app = async (event: SQSEvent, { appSync, logger }: AppDependencies)
       if (isCreateTaskCommand(command)) {
         return createTask(appSync, logger)(command as CreateTaskCommand);
       }
+      // TODO Add command for updating task
     } catch (error) {
       logger.error(`Error processing command ${error.message}`);
       return;

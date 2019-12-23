@@ -1,4 +1,4 @@
-# Images to GIF process
+# Example process
 
 ```bash
 $ yarn deploy
