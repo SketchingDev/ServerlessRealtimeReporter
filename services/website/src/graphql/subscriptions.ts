@@ -3,7 +3,7 @@ subscription{
   onCreateProcess {
     id,
     name,
-    timestamp
+    created
   }
 }`;
 

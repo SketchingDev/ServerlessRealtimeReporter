@@ -34,7 +34,7 @@ export class ProcessDetails extends React.Component<IProps, {}> {
         <Table.Body>
           <Table.Row>
             <Table.Cell>Date started</Table.Cell>
-            <Table.Cell>{new Date(process.timestamp).toISOString()}</Table.Cell>
+            <Table.Cell>{new Date(process.created).toISOString()}</Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table>

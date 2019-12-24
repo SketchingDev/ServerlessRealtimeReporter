@@ -19,7 +19,7 @@ export class ListProcesses extends React.Component {
           <List.Header>
             <Link to={`/process/${process.id}`}>{process.name}</Link>
           </List.Header>
-          <List.Description as="a">{distanceInWords(Date.now(), new Date(process.timestamp))}</List.Description>
+          <List.Description as="a">{distanceInWords(Date.now(), new Date(process.created))}</List.Description>
         </List.Content>
       </List.Item>
     );
@@ -27,7 +27,7 @@ export class ListProcesses extends React.Component {
     const ProcessList = ({ processes }: { processes: Process[] }) => (
       <List divided={true} relaxed={true}>
         {processes
-          .sort((s1, s2) => s2.timestamp - s1.timestamp)
+          .sort((s1, s2) => s2.created - s1.created)
           .map(process => (
             <ProcessItem key={process.id} process={process} />
           ))}
@@ -62,7 +62,7 @@ export class ListProcesses extends React.Component {
           }
 
           const allProcesses = Object.values(this.createdProcesses).concat(data.getAllProcesses);
-          const orderedProcesses = allProcesses.sort((s1: Process, s2: Process) => s1.timestamp - s2.timestamp);
+          const orderedProcesses = allProcesses.sort((s1: Process, s2: Process) => s1.created - s2.created);
 
           return (
             <div>
