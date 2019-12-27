@@ -9,7 +9,7 @@ import { and, hasProcessId, hasTaskId, waitForProcessInAppSync } from "../waitFo
 
 jest.setTimeout(20 * 1000);
 
-describe("SQS deployment", () => {
+describe("Commands processed from the queue", () => {
   const region = "us-east-1";
   const stackName = "process-reporter-test";
 
@@ -48,7 +48,7 @@ describe("SQS deployment", () => {
   test("process created is returned in getAllProcessesQuery", async () => {
     await sqs
       .sendMessage({
-        MessageBody: JSON.stringify({ ...createProcessCommand }),
+        MessageBody: JSON.stringify(createProcessCommand),
         QueueUrl: queueUrl,
       })
       .promise();
@@ -74,8 +74,8 @@ describe("SQS deployment", () => {
     await sqs
       .sendMessageBatch({
         Entries: [
-          { Id: uuidv4(), MessageBody: JSON.stringify({ ...createProcessCommand }) },
-          { Id: uuidv4(), MessageBody: JSON.stringify({...createTaskCommand}) },
+          { Id: uuidv4(), MessageBody: JSON.stringify(createProcessCommand ) },
+          { Id: uuidv4(), MessageBody: JSON.stringify(createTaskCommand) },
         ],
         QueueUrl: queueUrl,
       })

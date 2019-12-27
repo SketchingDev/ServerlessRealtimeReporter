@@ -1,7 +1,7 @@
 import { Command } from "../Command";
 
 export interface CreateTaskCommand extends Command {
-  commandType: "create-task",
+  commandType: "create-task";
   id: string;
   name: string;
   processId: string;

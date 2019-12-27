@@ -7,6 +7,8 @@ import { createProcess, isCreateProcessCommand } from "./src/commands/createProc
 import { CreateProcessCommand } from "./src/commands/createProcess/createProcessCommand";
 import { createTask, isCreateTaskCommand } from "./src/commands/createTask/createTask";
 import { CreateTaskCommand } from "./src/commands/createTask/createTaskCommand";
+import { isUpdateTaskCommand, updateTask } from "./src/commands/updateTask/updateTask";
+import { UpdateTaskCommand } from "./src/commands/updateTask/updateTaskCommand";
 
 export interface Logger {
   info: (message?: any, ...optionalParams: any[]) => void;
@@ -39,7 +41,7 @@ const dependencies: LaconiaFactory = ({ env }: { env: EnvDependencies }): AppDep
 
 export const app = async (event: SQSEvent, { appSync, logger }: AppDependencies) => {
   const promises = sqs(event).records.map(({ body }) => {
-    const command = body as CreateProcessCommand | CreateTaskCommand;
+    const command = body as CreateProcessCommand | CreateTaskCommand | UpdateTaskCommand;
 
     try {
       if (isCreateProcessCommand(command)) {
@@ -48,7 +50,9 @@ export const app = async (event: SQSEvent, { appSync, logger }: AppDependencies)
       if (isCreateTaskCommand(command)) {
         return createTask(appSync, logger)(command as CreateTaskCommand);
       }
-      // TODO Add command for updating task
+      if (isUpdateTaskCommand(command)) {
+        return updateTask(appSync, logger)(command as UpdateTaskCommand);
+      }
     } catch (error) {
       logger.error(`Error processing command ${error.message}`);
       return;

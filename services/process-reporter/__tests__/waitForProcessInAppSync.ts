@@ -38,5 +38,8 @@ export const hasProcessId = (expectedProcessId: string): ProcessPredicate => ({ 
 export const hasTaskId = (expectedTaskId: string): ProcessPredicate => ({ tasks }) =>
   tasks.some(t => t.id === expectedTaskId);
 
+export const hasTaskStatus = (expectedTaskStatus: string): ProcessPredicate => ({ tasks }) =>
+  tasks.some(t => t.status === expectedTaskStatus);
+
 export const and = (...predicates: ProcessPredicate[]): ProcessPredicate => process =>
   predicates.every(predicate => predicate(process));
