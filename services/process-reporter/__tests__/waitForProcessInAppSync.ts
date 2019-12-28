@@ -1,7 +1,10 @@
+import { ApolloError } from 'apollo-client';
 import AWSAppSyncClient from "aws-appsync/lib";
 import pRetry from "p-retry";
 import { Process } from "../src/process";
 import { getAllProcessesQuery } from "./getAllProcessesQuery";
+
+const throughputExceededException = 'DynamoDB:ProvisionedThroughputExceededException';
 
 type ProcessPredicate = (process: Process) => boolean;
 
@@ -12,7 +15,7 @@ export const waitForProcessInAppSync = async (
   let actualProcess: Process | undefined;
   await pRetry(
     async () => {
-      let data: { getAllProcesses: Process[] };
+      let data: { getAllProcesses: Process[] } = {getAllProcesses: []};
 
       try {
         const queryResult = await client.query<{ getAllProcesses: Process[] }>({
@@ -20,14 +23,22 @@ export const waitForProcessInAppSync = async (
           fetchPolicy: "no-cache",
         });
         data = queryResult.data;
-      } catch ({ message }) {
-        throw new pRetry.AbortError(message);
+      } catch (err) {
+        let abortRetry = true;
+
+        if (err instanceof ApolloError && err.graphQLErrors) {
+          abortRetry = err.graphQLErrors.some(({errorType}) => errorType !== throughputExceededException);
+        }
+
+        if (abortRetry) {
+          throw new pRetry.AbortError(err.message);
+        }
       }
 
       actualProcess = data.getAllProcesses.find(predicate);
       expect(actualProcess).not.toBeUndefined();
     },
-    { retries: 5 },
+    { forever: true, factor: 1, onFailedAttempt: () => console.error("AppSync failed. Retrying...") },
   );
 
   return actualProcess;

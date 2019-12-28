@@ -5,6 +5,7 @@ The Process Reporter consumes commands from its SQS for managing Processes and t
 ## Commands
 * CreateProcessCommand
 * CreateTaskCommand
+* UpdateTaskCommand
 
 
 ## Features

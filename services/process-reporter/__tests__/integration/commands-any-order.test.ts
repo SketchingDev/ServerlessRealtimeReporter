@@ -4,11 +4,12 @@ import "isomorphic-fetch";
 import uuidv4 from "uuid/v4";
 import { CreateProcessCommand } from "../../src/commands/createProcess/createProcessCommand";
 import { CreateTaskCommand } from "../../src/commands/createTask/createTaskCommand";
+import { UpdateTaskCommand } from "../../src/commands/updateTask/updateTaskCommand";
 import { createSqsEvent } from "../createSqsEvent";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { and, hasProcessId, hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { and, hasProcessId, hasTaskId, hasTaskStatus, waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-jest.setTimeout(20 * 1000);
+jest.setTimeout(40 * 1000);
 
 describe("Commands can be processed in any order", () => {
   const region = "us-east-1";
@@ -59,7 +60,7 @@ describe("Commands can be processed in any order", () => {
 
     const process = await waitForProcessInAppSync(
       client,
-      and(hasProcessId(createProcessCommand.id), hasTaskId(createTaskCommand.id)),
+      and(hasProcessId(createProcessCommand.id), hasTaskId(createTaskCommand.id))
     );
     expect(process).toStrictEqual({
       __typename: "Process",
@@ -76,6 +77,61 @@ describe("Commands can be processed in any order", () => {
           processId: createProcessCommand.id,
           status: "PENDING",
           updated: createTaskCommand.createdTimestamp,
+        },
+      ],
+    });
+  });
+
+  test("Task can be updated before being created", async () => {
+    const createProcessCommand: CreateProcessCommand = {
+      commandType: "create-process",
+      id: uuidv4(),
+      name: uuidv4(),
+      createdTimestamp: Date.now(),
+    };
+
+    const createTaskCommand: CreateTaskCommand = {
+      commandType: "create-task",
+      createdTimestamp: Date.now(),
+      id: uuidv4(),
+      name: uuidv4(),
+      processId: createProcessCommand.id,
+    };
+
+    const updateTaskCommand: UpdateTaskCommand = {
+      commandType: "update-task",
+      failureReason: uuidv4(),
+      id: createTaskCommand.id,
+      status: "FAILURE",
+      updatedTimestamp: Date.now(),
+    };
+
+    await lambda
+      .invoke({
+        FunctionName: lambdaArn!,
+        Payload: JSON.stringify(createSqsEvent([updateTaskCommand, createProcessCommand, createTaskCommand ])),
+      })
+      .promise();
+
+    const process = await waitForProcessInAppSync(
+      client,
+      and(hasProcessId(createProcessCommand.id), hasTaskId(createTaskCommand.id), hasTaskStatus(updateTaskCommand.status))
+    );
+    expect(process).toStrictEqual({
+      __typename: "Process",
+      id: createProcessCommand.id,
+      name: createProcessCommand.name,
+      created: createProcessCommand.createdTimestamp,
+      tasks: [
+        {
+          __typename: "Task",
+          created: createTaskCommand.createdTimestamp,
+          failureReason: updateTaskCommand.failureReason,
+          id: createTaskCommand.id,
+          name: createTaskCommand.name,
+          processId: createProcessCommand.id,
+          status: "FAILURE",
+          updated: updateTaskCommand.updatedTimestamp,
         },
       ],
     });
