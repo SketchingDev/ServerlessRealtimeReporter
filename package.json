@@ -18,7 +18,7 @@
     "lint": "lerna run lint --stream",
     "deploy:test": "lerna run deploy:test --stream",
     "deploy:dev": "lerna run deploy:dev --stream",
-    "destroy:test": "lerna run destroy:test --stream",
-    "destroy:dev": "lerna run destroy:dev --stream"
+    "destroy:test": "lerna run destroy:test --stream --no-bail",
+    "destroy:dev": "lerna run destroy:dev --stream --no-bail"
   }
 }
