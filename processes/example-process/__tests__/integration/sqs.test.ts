@@ -20,13 +20,10 @@ describe("SQS deployment", () => {
   let lambdaArn: string | undefined;
 
   beforeAll(async () => {
-    const outputs = await extractServiceOutputs(
-      new CloudFormation({ region, apiVersion: "2010-05-15" }),
-      {
-        stackName,
-        outputsToExtract: [queueNameCloudFormationOutputKey, lambdaArnCloudFormationOutputKey],
-      },
-    );
+    const outputs = await extractServiceOutputs(new CloudFormation({ region, apiVersion: "2010-05-15" }), {
+      stackName,
+      outputsToExtract: [queueNameCloudFormationOutputKey, lambdaArnCloudFormationOutputKey],
+    });
 
     const queueName = outputs.get(queueNameCloudFormationOutputKey);
     queueUrl = (await sqs.getQueueUrl({ QueueName: queueName! }).promise()).QueueUrl!;
@@ -34,7 +31,7 @@ describe("SQS deployment", () => {
   });
 
   // beforeEach(async () => {
-    // await sqs.purgeQueue({ QueueUrl: queueUrl! }).promise();
+  // await sqs.purgeQueue({ QueueUrl: queueUrl! }).promise();
   // });
 
   test("source created is returned in getAllProcessesQuery", async () => {
@@ -48,21 +45,23 @@ describe("SQS deployment", () => {
     const messages = await waitForMessagesInSqs(sqs, queueUrl!, twoMessagesExpected);
     expect(messages).toBeDefined();
 
-    const parsedBodies = messages.map(({Body}) => JSON.parse(Body!));
-    expect(parsedBodies).toMatchObject(expect.arrayContaining([{
-        commandType: "create-process",
-        id: expect.any(String),
-        name: "Download 0 images",
-        createdTimestamp: expect.any(Number),
-      },
+    const parsedBodies = messages.map(({ Body }) => JSON.parse(Body!));
+    expect(parsedBodies).toMatchObject(
+      expect.arrayContaining([
+        {
+          commandType: "create-process",
+          id: expect.any(String),
+          name: "Download 0 images",
+          createdTimestamp: expect.any(Number),
+        },
         {
           commandType: "create-task",
           id: expect.any(String),
           name: "Downloading image 1",
           processId: expect.any(String),
           createdTimestamp: expect.any(Number),
-        }])
-      );
+        },
+      ]),
+    );
   });
 });
-
