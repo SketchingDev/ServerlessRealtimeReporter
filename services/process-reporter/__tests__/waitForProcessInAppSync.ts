@@ -1,33 +1,41 @@
-import { ApolloError } from 'apollo-client';
+import { ApolloError } from "apollo-client";
 import AWSAppSyncClient from "aws-appsync/lib";
 import pRetry from "p-retry";
 import { Process } from "../src/process";
-import { getAllProcessesQuery } from "./getAllProcessesQuery";
+import { getProcessQuery } from "./getProcessQuery";
 
-const throughputExceededException = 'DynamoDB:ProvisionedThroughputExceededException';
+const throughputExceededException = "DynamoDB:ProvisionedThroughputExceededException";
 
 type ProcessPredicate = (process: Process) => boolean;
 
 export const waitForProcessInAppSync = async (
   client: AWSAppSyncClient<any>,
-  predicate: ProcessPredicate,
-): Promise<Process | undefined> => {
-  let actualProcess: Process | undefined;
+  processId: string,
+  timeoutInMs: number,
+  predicate: ProcessPredicate = () => true,
+): Promise<Process | null> => {
+  let actualProcess: Process | null = null;
+
   await pRetry(
     async () => {
-      let data: { getAllProcesses: Process[] } = {getAllProcesses: []};
+      let data: { getProcess: Process | null } = { getProcess: null };
 
       try {
-        const queryResult = await client.query<{ getAllProcesses: Process[] }>({
-          query: getAllProcessesQuery,
+        const queryResult = await client.query<{ getProcess: Process | null }>({
+          variables: {
+            id: processId,
+          },
+          query: getProcessQuery,
           fetchPolicy: "no-cache",
         });
         data = queryResult.data;
+
+        console.log(`Queried AppSync...`);
       } catch (err) {
         let abortRetry = true;
 
         if (err instanceof ApolloError && err.graphQLErrors) {
-          abortRetry = err.graphQLErrors.some(({errorType}) => errorType !== throughputExceededException);
+          abortRetry = err.graphQLErrors.some(({ errorType }) => errorType !== throughputExceededException);
         }
 
         if (abortRetry) {
@@ -35,16 +43,17 @@ export const waitForProcessInAppSync = async (
         }
       }
 
-      actualProcess = data.getAllProcesses.find(predicate);
-      expect(actualProcess).not.toBeUndefined();
+      if (data.getProcess && predicate(data.getProcess)) {
+        actualProcess = data.getProcess;
+      }
+
+      expect(actualProcess).not.toBeNull();
     },
-    { forever: true, factor: 1, onFailedAttempt: () => console.error("AppSync failed. Retrying...") },
+    { maxRetryTime: timeoutInMs, retries:100, onFailedAttempt: () => console.error("Process not found in AppSync. Retrying...") },
   );
 
   return actualProcess;
 };
-
-export const hasProcessId = (expectedProcessId: string): ProcessPredicate => ({ id }) => id === expectedProcessId;
 
 export const hasTaskId = (expectedTaskId: string): ProcessPredicate => ({ tasks }) =>
   tasks.some(t => t.id === expectedTaskId);

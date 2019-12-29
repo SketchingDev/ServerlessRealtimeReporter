@@ -40,29 +40,53 @@ const dependencies: LaconiaFactory = ({ env }: { env: EnvDependencies }): AppDep
 });
 
 export const app = async (event: SQSEvent, { appSync, logger }: AppDependencies) => {
-  const promises = sqs(event).records.map(({ body }) => {
+  console.log("Received event", event);
+  for (const {body} of sqs(event).records) {
     const command = body as CreateProcessCommand | CreateTaskCommand | UpdateTaskCommand;
+    console.log(`Processing command ${command.commandType}`);
 
     try {
       if (isCreateProcessCommand(command)) {
-        return createProcess(appSync, logger)(command as CreateProcessCommand);
+        await createProcess(appSync, logger)(command as CreateProcessCommand);
       }
       if (isCreateTaskCommand(command)) {
-        return createTask(appSync, logger)(command as CreateTaskCommand);
+        await createTask(appSync, logger)(command as CreateTaskCommand);
       }
       if (isUpdateTaskCommand(command)) {
-        return updateTask(appSync, logger)(command as UpdateTaskCommand);
+        await updateTask(appSync, logger)(command as UpdateTaskCommand);
       }
     } catch (error) {
       logger.error(`Error processing command ${error.message}`);
-      return;
+      // return;
     }
+  }
 
-    logger.error(`Unknown command ${JSON.stringify(command)}`);
-    return;
-  });
-
-  await Promise.all(promises);
+  // const promises = sqs(event).records.map(({ body }) => {
+  //   const command = body as CreateProcessCommand | CreateTaskCommand | UpdateTaskCommand;
+  //   console.log(`Processing command ${command.commandType}`);
+  //
+  //   try {
+  //     if (isCreateProcessCommand(command)) {
+  //       return createProcess(appSync, logger)(command as CreateProcessCommand);
+  //     }
+  //     if (isCreateTaskCommand(command)) {
+  //       return createTask(appSync, logger)(command as CreateTaskCommand);
+  //     }
+  //     if (isUpdateTaskCommand(command)) {
+  //       return updateTask(appSync, logger)(command as UpdateTaskCommand);
+  //     }
+  //   } catch (error) {
+  //     console.log("Error");
+  //     logger.error(`Error processing command ${error.message}`);
+  //     return;
+  //   }
+  //
+  //   console.log("Error");
+  //   logger.error(`Unknown command ${JSON.stringify(command)}`);
+  //   return;
+  // });
+  //
+  // await Promise.all(promises);
 };
 
 export const processCreator: SQSHandler = laconia(app).register(dependencies);

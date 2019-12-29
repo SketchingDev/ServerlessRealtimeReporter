@@ -6,9 +6,11 @@ import { CreateProcessCommand } from "../../src/commands/createProcess/createPro
 import { CreateTaskCommand } from "../../src/commands/createTask/createTaskCommand";
 import { createSqsEvent } from "../createSqsEvent";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { and, hasProcessId, hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-jest.setTimeout(20 * 1000);
+const jestTimeout = 20 * 1000;
+const appSyncRetryTimeout = jestTimeout - (4 * 1000);
+jest.setTimeout(jestTimeout);
 
 describe("Lambda deployment", () => {
   const region = "us-east-1";
@@ -52,7 +54,7 @@ describe("Lambda deployment", () => {
       })
       .promise();
 
-    const process = await waitForProcessInAppSync(client, hasProcessId(createProcessCommand.id));
+    const process = await waitForProcessInAppSync(client, createProcessCommand.id, appSyncRetryTimeout);
     expect(process).toMatchObject({
       __typename: "Process",
       id: createProcessCommand.id,
@@ -73,13 +75,15 @@ describe("Lambda deployment", () => {
     await lambda
       .invoke({
         FunctionName: lambdaArn!,
-        Payload: JSON.stringify(createSqsEvent([{ ...createProcessCommand }, { ...createTaskCommand }])),
+        Payload: JSON.stringify(createSqsEvent([createProcessCommand, createTaskCommand])),
       })
       .promise();
 
     const process = await waitForProcessInAppSync(
       client,
-      and(hasProcessId(createProcessCommand.id), hasTaskId(createTaskCommand.id)),
+      createProcessCommand.id,
+      appSyncRetryTimeout,
+      hasTaskId(createTaskCommand.id),
     );
     expect(process).toStrictEqual({
       __typename: "Process",

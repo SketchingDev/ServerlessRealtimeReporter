@@ -9,11 +9,13 @@ import { AddTaskVariables } from "../../src/commands/createTask/graphql/addTaskV
 import { Task } from "../../src/task";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import {
-  and,
-  hasProcessId,
   hasTaskId,
   waitForProcessInAppSync,
 } from "../waitForProcessInAppSync";
+
+const jestTimeout = 20 * 1000;
+const appSyncRetryTimeout = jestTimeout - (4 * 1000);
+jest.setTimeout(jestTimeout);
 
 describe("GraphQL deployment", () => {
   const region = "us-east-1";
@@ -71,7 +73,7 @@ describe("GraphQL deployment", () => {
       fetchPolicy: "no-cache",
     });
 
-    const process = await waitForProcessInAppSync(client, hasProcessId(createProcessVariables.id));
+    const process = await waitForProcessInAppSync(client, createProcessVariables.id, appSyncRetryTimeout);
     expect(process).toStrictEqual(
       {
         __typename: "Process",
@@ -99,7 +101,7 @@ describe("GraphQL deployment", () => {
       fetchPolicy: "no-cache",
     });
 
-    const process = await waitForProcessInAppSync(client, and(hasProcessId(createProcessVariables.id), hasTaskId(addTaskVariables.id)));
+    const process = await waitForProcessInAppSync(client,createProcessVariables.id, appSyncRetryTimeout, hasTaskId(addTaskVariables.id));
     expect(process).toStrictEqual(
       {
         __typename: "Process",

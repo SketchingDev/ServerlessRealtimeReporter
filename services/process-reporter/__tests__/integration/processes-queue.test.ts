@@ -5,9 +5,11 @@ import uuidv4 from "uuid/v4";
 import { CreateProcessCommand } from "../../src/commands/createProcess/createProcessCommand";
 import { CreateTaskCommand } from "../../src/commands/createTask/createTaskCommand";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { and, hasProcessId, hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-jest.setTimeout(20 * 1000);
+const jestTimeout = 20 * 1000;
+const appSyncRetryTimeout = jestTimeout - (4 * 1000);
+jest.setTimeout(jestTimeout);
 
 describe("Commands processed from the queue", () => {
   const region = "us-east-1";
@@ -53,7 +55,7 @@ describe("Commands processed from the queue", () => {
       })
       .promise();
 
-    const process = await waitForProcessInAppSync(client, hasProcessId(createProcessCommand.id));
+    const process = await waitForProcessInAppSync(client, createProcessCommand.id, appSyncRetryTimeout);
     expect(process).toMatchObject({
       __typename: "Process",
       id: createProcessCommand.id,
@@ -83,7 +85,9 @@ describe("Commands processed from the queue", () => {
 
     const process = await waitForProcessInAppSync(
       client,
-      and(hasProcessId(createProcessCommand.id), hasTaskId(createTaskCommand.id)),
+      createProcessCommand.id,
+      appSyncRetryTimeout,
+      hasTaskId(createTaskCommand.id),
     );
     expect(process).toStrictEqual({
       __typename: "Process",
