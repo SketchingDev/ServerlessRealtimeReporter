@@ -77,7 +77,7 @@ describe("CreateProcessCommand", () => {
     };
 
     await handler(createSqsEvent({...invalidCommand}), {} as any, jest.fn());
-    expect(mockLogger.error).toHaveBeenCalledWith("Create Process Command is invalid", [
+    expect(mockLogger.error).toHaveBeenCalledWith("Command is invalid", [
       {
         dataPath: "",
         keyword: "required",
