@@ -1,5 +1,4 @@
 import AWSAppSyncClient from "aws-appsync/lib";
-// import { Logger } from "../../../../handler";
 import { updateTaskMutation } from "../../../../src/commands/updateTask/graphql/updateTaskMutation";
 import { updateTask } from "../../../../src/commands/updateTask/updateTask";
 import { UpdateTaskCommand } from "../../../../src/commands/updateTask/updateTaskCommand";
