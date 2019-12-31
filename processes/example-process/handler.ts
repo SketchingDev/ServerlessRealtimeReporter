@@ -6,6 +6,8 @@ import { SqsProgressReporter } from "./src/SqsProgressReporter";
 // export const sourceIdGenerator = (namespace: string) => (s3Event: IS3Record): RequestSourceId =>
 //   uuidv5(s3Event.s3.object.key + s3Event.eventTime, namespace);
 
+// const secondOverhead = 1;
+
 export interface EnvDependencies {
   REGION: string;
   PROCESS_SQS_QUEUE_NAME: string;
@@ -37,10 +39,11 @@ export const app = async (event: S3CreateEvent, { progressReporter }: AppDepende
   // });
   //
   // await Promise.all(progresses);
-  const process = {id: `${Date.now()}`, name: 'Download 0 images'};
-  const task = {id: `${Date.now()}`, name: "Downloading image 1", parentProcess: { id: process.id }};
-  await progressReporter.invokedProcess(process);
+  const processa = {id: `${Date.now()}`, name: 'Download 0 images'};
+  const task = {id: `${Date.now()}`, name: "Downloading image 1", parentProcess: { id: processa.id }};
+  await progressReporter.invokedProcess(processa);
   await progressReporter.invokedProcessTask(task);
+  await progressReporter.taskCompleteSuccessfully(task);
 };
 
 export const doSomething: SQSHandler = laconia(app)

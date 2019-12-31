@@ -10,8 +10,10 @@ provider:
   name: aws
   runtime: nodejs10.x
   stage: ${opt:stage, 'dev'}
+  timeout: ${self:custom.lambdaTimeout}
   environment:
     AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+    LAMBDA_TIMEOUT: ${self:custom.lambdaTimeout}
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -40,6 +42,7 @@ custom:
   webpack:
     webpackConfig: ./webpack.config.js
     includeModules: true
+  lambdaTimeout: 10
 
 resources:
   Conditions:

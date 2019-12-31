@@ -8,7 +8,6 @@ export const updateTaskCommandSchema = {
     "commandType",
     "id",
     "status",
-    "failureReason",
     "updatedTimestamp"
   ],
   "properties": {

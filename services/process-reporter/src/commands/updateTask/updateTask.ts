@@ -14,12 +14,14 @@ export const updateTask = (appSync: AWSAppSyncClient<any>, logger: Logger) => as
   logger.info("Received Update Task Command", command);
   validateCommand(command, updateTaskCommandSchema, logger);
 
+  const failureReason = !command.failureReason ? "N/A" : command.failureReason;
+
   return appSync.mutate<Task, UpdateTaskVariables>({
     variables: {
       id: command.id,
       status: command.status,
       updated: command.updatedTimestamp,
-      failureReason: command.failureReason
+      failureReason
     },
     mutation: updateTaskMutation,
     fetchPolicy: "no-cache",

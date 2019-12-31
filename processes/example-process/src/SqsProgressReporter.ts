@@ -33,6 +33,14 @@ interface CreateTaskCommand {
   createdTimestamp: number;
 }
 
+interface UpdateTaskCommand {
+  commandType: "update-task";
+  id: string;
+  status: 'PENDING' | 'SUCCESS' | 'FAILURE';
+  updatedTimestamp: number;
+  failureReason?: string;
+}
+
 
 export class SqsProgressReporter implements ProgressReporter {
   public static async createFromQueueName(sqs: SQS, queueName: string) {
@@ -87,6 +95,39 @@ export class SqsProgressReporter implements ProgressReporter {
     await this.sqs
       .sendMessage({
         MessageBody: JSON.stringify(createTaskCommand),
+        QueueUrl: this.queueUrl,
+      })
+      .promise();
+  }
+
+  public async taskCompleteSuccessfully(task: {id: string}) {
+    const updateTaskCommand: UpdateTaskCommand = {
+      commandType: "update-task",
+      id: task.id,
+      status: "SUCCESS",
+      updatedTimestamp: Date.now(),
+    };
+
+    await this.sqs
+      .sendMessage({
+        MessageBody: JSON.stringify(updateTaskCommand),
+        QueueUrl: this.queueUrl,
+      })
+      .promise();
+  }
+
+  public async taskCompleteUnsuccessfully(task: {id: string}, failureReason: string) {
+    const updateTaskCommand: UpdateTaskCommand = {
+      commandType: "update-task",
+      failureReason,
+      id: task.id,
+      status: "FAILURE",
+      updatedTimestamp: Date.now(),
+    };
+
+    await this.sqs
+      .sendMessage({
+        MessageBody: JSON.stringify(updateTaskCommand),
         QueueUrl: this.queueUrl,
       })
       .promise();

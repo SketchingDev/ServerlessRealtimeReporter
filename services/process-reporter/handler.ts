@@ -57,36 +57,8 @@ export const app = async (event: SQSEvent, { appSync, logger }: AppDependencies)
       }
     } catch (error) {
       logger.error(`Error processing command ${error.message}`);
-      // return;
     }
   }
-
-  // const promises = sqs(event).records.map(({ body }) => {
-  //   const command = body as CreateProcessCommand | CreateTaskCommand | UpdateTaskCommand;
-  //   console.log(`Processing command ${command.commandType}`);
-  //
-  //   try {
-  //     if (isCreateProcessCommand(command)) {
-  //       return createProcess(appSync, logger)(command as CreateProcessCommand);
-  //     }
-  //     if (isCreateTaskCommand(command)) {
-  //       return createTask(appSync, logger)(command as CreateTaskCommand);
-  //     }
-  //     if (isUpdateTaskCommand(command)) {
-  //       return updateTask(appSync, logger)(command as UpdateTaskCommand);
-  //     }
-  //   } catch (error) {
-  //     console.log("Error");
-  //     logger.error(`Error processing command ${error.message}`);
-  //     return;
-  //   }
-  //
-  //   console.log("Error");
-  //   logger.error(`Unknown command ${JSON.stringify(command)}`);
-  //   return;
-  // });
-  //
-  // await Promise.all(promises);
 };
 
 export const processCreator: SQSHandler = laconia(app).register(dependencies);

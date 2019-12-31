@@ -32,24 +32,4 @@ export const getProcessTasksQuery = `
       }
     }
   }
-
-
-
-
-query getProcess($id: ID!){
-  getProcess(id: $id) {
-    id,
-    name,
-    created,
-    tasks {
-      id
-      processId
-      name
-      status
-      created
-      updated
-      failureReason
-    }
-  }
-}
 `;
