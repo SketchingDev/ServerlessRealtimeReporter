@@ -8,9 +8,11 @@ import { UpdateTaskVariables } from "./graphql/updateTaskVariables";
 import { UpdateTaskCommand } from "./updateTaskCommand";
 import { updateTaskCommandSchema } from "./updateTaskCommand.schema";
 
-export const isUpdateTaskCommand = ({commandType}: Command) => commandType === "update-task";
+export const isUpdateTaskCommand = ({ commandType }: Command) => commandType === "update-task";
 
-export const updateTask = (appSync: AWSAppSyncClient<any>, logger: Logger) => async (command: UpdateTaskCommand): Promise<void> => {
+export const updateTask = (appSync: AWSAppSyncClient<any>, logger: Logger) => async (
+  command: UpdateTaskCommand,
+): Promise<void> => {
   logger.info("Received Update Task Command", command);
   validateCommand(command, updateTaskCommandSchema, logger);
 
@@ -21,7 +23,7 @@ export const updateTask = (appSync: AWSAppSyncClient<any>, logger: Logger) => as
       id: command.id,
       status: command.status,
       updated: command.updatedTimestamp,
-      failureReason
+      failureReason,
     },
     mutation: updateTaskMutation,
     fetchPolicy: "no-cache",

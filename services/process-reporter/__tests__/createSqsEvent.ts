@@ -1,8 +1,8 @@
 import { SQSEvent, SQSRecord } from "aws-lambda";
 
-export const createSqsEvent = (bodies: any[]| any): SQSEvent => ({
-  Records: [].concat(bodies).map((body): SQSRecord => (
-    {
+export const createSqsEvent = (bodies: any[] | any): SQSEvent => ({
+  Records: [].concat(bodies).map(
+    (body): SQSRecord => ({
       attributes: {
         ApproximateFirstReceiveTimestamp: "",
         ApproximateReceiveCount: "",
@@ -17,6 +17,6 @@ export const createSqsEvent = (bodies: any[]| any): SQSEvent => ({
       messageId: "",
       receiptHandle: "",
       body: JSON.stringify(body),
-    }
-  )),
+    }),
+  ),
 });

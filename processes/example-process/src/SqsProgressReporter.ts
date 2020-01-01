@@ -20,7 +20,7 @@ export interface Task {
 }
 
 interface CreateProcessCommand {
-  commandType: "create-process",
+  commandType: "create-process";
   id: string;
   name: string;
   createdTimestamp: number;
@@ -37,11 +37,10 @@ interface CreateTaskCommand {
 interface UpdateTaskCommand {
   commandType: "update-task";
   id: string;
-  status: 'PENDING' | 'SUCCESS' | 'FAILURE';
+  status: "PENDING" | "SUCCESS" | "FAILURE";
   updatedTimestamp: number;
   failureReason?: string;
 }
-
 
 export class SqsProgressReporter implements ProgressReporter {
   public static async createFromQueueName(sqs: SQS, queueName: string) {
@@ -101,7 +100,7 @@ export class SqsProgressReporter implements ProgressReporter {
       .promise();
   }
 
-  public async taskCompleteSuccessfully(task: {id: string}) {
+  public async taskCompleteSuccessfully(task: { id: string }) {
     const updateTaskCommand: UpdateTaskCommand = {
       commandType: "update-task",
       id: task.id,
@@ -117,7 +116,7 @@ export class SqsProgressReporter implements ProgressReporter {
       .promise();
   }
 
-  public async taskCompleteUnsuccessfully(task: {id: string}, failureReason: string) {
+  public async taskCompleteUnsuccessfully(task: { id: string }, failureReason: string) {
     const updateTaskCommand: UpdateTaskCommand = {
       commandType: "update-task",
       failureReason,

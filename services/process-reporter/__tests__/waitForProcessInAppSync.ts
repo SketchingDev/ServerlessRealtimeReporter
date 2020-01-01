@@ -49,7 +49,11 @@ export const waitForProcessInAppSync = async (
 
       expect(actualProcess).not.toBeNull();
     },
-    { maxRetryTime: timeoutInMs, retries:100, onFailedAttempt: () => console.error("Process not found in AppSync. Retrying...") },
+    {
+      maxRetryTime: timeoutInMs,
+      retries: 100,
+      onFailedAttempt: () => console.error("Process not found in AppSync. Retrying..."),
+    },
   );
 
   return actualProcess;

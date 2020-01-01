@@ -50,9 +50,7 @@ export const app = async (
 
     // if (getRandomInt(0,1)) {
     promises.push(
-      runAfterInterval(randomIntGenerator(10000, 20000), async () =>
-        progressReporter.taskCompleteSuccessfully(newTask),
-      ),
+      runAfterInterval(randomIntGenerator(10000, 20000), async () => progressReporter.taskCompleteSuccessfully(newTask)),
     );
     // } else {
     // promises.push(runAfterRandomInterval({min: 10, max: 20}, async () => progressReporter.taskCompleteUnsuccessfully(newTask, `Failed to download image ${i}`)));

@@ -8,9 +8,11 @@ import { createTaskCommandSchema } from "./createTaskCommand.schema";
 import { addTaskMutation } from "./graphql/addTaskMutation";
 import { AddTaskVariables } from "./graphql/addTaskVariables";
 
-export const isCreateTaskCommand = ({commandType}: Command) => commandType === "create-task";
+export const isCreateTaskCommand = ({ commandType }: Command) => commandType === "create-task";
 
-export const createTask = (appSync: AWSAppSyncClient<any>, logger: Logger) => async (command: CreateTaskCommand): Promise<void> => {
+export const createTask = (appSync: AWSAppSyncClient<any>, logger: Logger) => async (
+  command: CreateTaskCommand,
+): Promise<void> => {
   logger.info("Received Create Task Command", command);
   validateCommand(command, createTaskCommandSchema, logger);
 

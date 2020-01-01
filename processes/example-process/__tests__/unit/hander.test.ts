@@ -6,7 +6,7 @@ import { SqsProgressReporter } from "../../src/SqsProgressReporter";
 
 test("Handler reports that the process has started", async () => {
   const sqs: jest.Mocked<SQS> = {
-    sendMessage: jest.fn().mockImplementation(() => ({ promise: () => Promise.resolve() }))
+    sendMessage: jest.fn().mockImplementation(() => ({ promise: () => Promise.resolve() })),
   } as any;
 
   const handler = createHandler(new SqsProgressReporter(sqs, "queueUrl"));
@@ -32,8 +32,11 @@ test("Handler reports that the process has started", async () => {
   });
 });
 
-const createHandler = (progressReporter: SqsProgressReporter) => laconia(app).register((): AppDependencies => ({
-  progressReporter,
-  randomIntGenerator: () => 1,
-  runAfterInterval: (_: number, func: () => Promise<void>) => func()
-}));
+const createHandler = (progressReporter: SqsProgressReporter) =>
+  laconia(app).register(
+    (): AppDependencies => ({
+      progressReporter,
+      randomIntGenerator: () => 1,
+      runAfterInterval: (_: number, func: () => Promise<void>) => func(),
+    }),
+  );

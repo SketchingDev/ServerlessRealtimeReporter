@@ -45,17 +45,16 @@ export class ListProcesses extends React.Component {
         subscription={graphqlOperation(onCreateProcessSubscription)}
         onSubscriptionMsg={subscriptionMsg}
       >
-        {({
-          data,
-          loading,
-          errors,
-        }: {
-          data: { getAllProcesses: Process[] };
-          loading: any;
-          errors: Error[];
-        }) => {
+        {({ data, loading, errors }: { data: { getAllProcesses: Process[] }; loading: any; errors: Error[] }) => {
           if (errors && errors.length > 0) {
-            return <div><h3>Error...</h3>{errors.map(eb => (<p key="{eb.message}">{eb.message}</p>))}</div>;
+            return (
+              <div>
+                <h3>Error...</h3>
+                {errors.map(eb => (
+                  <p key="{eb.message}">{eb.message}</p>
+                ))}
+              </div>
+            );
           }
           if (loading || !data.getAllProcesses) {
             return <h3>Loading...</h3>;

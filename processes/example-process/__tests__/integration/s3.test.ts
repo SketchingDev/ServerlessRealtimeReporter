@@ -24,13 +24,10 @@ describe("S3 deployment", () => {
   const objectsCreated: string[] = [];
 
   beforeAll(async () => {
-    const outputs = await extractServiceOutputs(
-      new CloudFormation({ region, apiVersion: "2010-05-15" }),
-      {
-        stackName,
-        outputsToExtract: [queueNameCloudFormationOutputKey, bucketNameCloudFormationOutputKey],
-      },
-    );
+    const outputs = await extractServiceOutputs(new CloudFormation({ region, apiVersion: "2010-05-15" }), {
+      stackName,
+      outputsToExtract: [queueNameCloudFormationOutputKey, bucketNameCloudFormationOutputKey],
+    });
 
     const queueName = outputs.get(queueNameCloudFormationOutputKey);
     queueUrl = (await sqs.getQueueUrl({ QueueName: queueName! }).promise()).QueueUrl!;
@@ -40,27 +37,28 @@ describe("S3 deployment", () => {
   afterAll(async () => {
     // await sqs.purgeQueue({ QueueUrl: queueUrl! }).promise();
     const objects = { Objects: objectsCreated.map(o => ({ Key: o })) };
-    await s3.deleteObjects({ Bucket: bucketName!, Delete: objects}).promise();
+    await s3.deleteObjects({ Bucket: bucketName!, Delete: objects }).promise();
   });
 
   test("source created is returned in getAllProcessesQuery", async () => {
     const objectKey = uuidv4();
     objectsCreated.push(objectKey);
 
-    await s3.putObject({ Bucket: bucketName!, Key: objectKey, Body: "TestBody" })
-      .promise();
+    await s3.putObject({ Bucket: bucketName!, Key: objectKey, Body: "TestBody" }).promise();
 
     const messages = await waitForMessagesInSqs(sqs, queueUrl!, twoMessagesExpected);
     expect(messages).toBeDefined();
 
     const parsedBodies = messages.map(({ Body }) => JSON.parse(Body!));
-    expect(parsedBodies).toMatchObject(expect.arrayContaining([{
-      commandType: "create-process",
-      id: expect.any(String),
-      name: expect.any(String),
-      createdTimestamp: expect.any(Number),
-      }]),
+    expect(parsedBodies).toMatchObject(
+      expect.arrayContaining([
+        {
+          commandType: "create-process",
+          id: expect.any(String),
+          name: expect.any(String),
+          createdTimestamp: expect.any(Number),
+        },
+      ]),
     );
   });
 });
-

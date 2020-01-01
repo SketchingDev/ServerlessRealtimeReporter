@@ -67,10 +67,7 @@ export class ListTasks extends React.Component<IProps> {
     );
   }
 
-  private onAddedOrUpdatedTask(
-    prevQuery: { getProcess: Process },
-    { onAddOrUpdateTask }: { onAddOrUpdateTask: Task },
-  ) {
+  private onAddedOrUpdatedTask(prevQuery: { getProcess: Process }, { onAddOrUpdateTask }: { onAddOrUpdateTask: Task }) {
     const updatedQuery = Object.assign({}, prevQuery);
 
     const invocation = updatedQuery.getProcess.tasks.find(i => i.id === onAddOrUpdateTask.id);

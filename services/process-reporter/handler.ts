@@ -41,7 +41,7 @@ const dependencies: LaconiaFactory = ({ env }: { env: EnvDependencies }): AppDep
 
 export const app = async (event: SQSEvent, { appSync, logger }: AppDependencies) => {
   console.log("Received event", event);
-  for (const {body} of sqs(event).records) {
+  for (const { body } of sqs(event).records) {
     const command = body as CreateProcessCommand | CreateTaskCommand | UpdateTaskCommand;
     console.log(`Processing command ${command.commandType}`);
 

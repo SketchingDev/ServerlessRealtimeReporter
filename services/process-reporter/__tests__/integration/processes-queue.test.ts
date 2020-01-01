@@ -8,7 +8,7 @@ import { extractServiceOutputs } from "../extractServiceOutputs";
 import { hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
 const jestTimeout = 20 * 1000;
-const appSyncRetryTimeout = jestTimeout - (4 * 1000);
+const appSyncRetryTimeout = jestTimeout - 4 * 1000;
 jest.setTimeout(jestTimeout);
 
 describe("Commands processed from the queue", () => {
@@ -76,7 +76,7 @@ describe("Commands processed from the queue", () => {
     await sqs
       .sendMessageBatch({
         Entries: [
-          { Id: uuidv4(), MessageBody: JSON.stringify(createProcessCommand ) },
+          { Id: uuidv4(), MessageBody: JSON.stringify(createProcessCommand) },
           { Id: uuidv4(), MessageBody: JSON.stringify(createTaskCommand) },
         ],
         QueueUrl: queueUrl,

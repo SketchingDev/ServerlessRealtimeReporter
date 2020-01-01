@@ -51,7 +51,7 @@ describe("SQS deployment", () => {
         {
           commandType: "create-process",
           id: expect.any(String),
-          name:  expect.any(String),
+          name: expect.any(String),
           createdTimestamp: expect.any(Number),
         },
       ]),

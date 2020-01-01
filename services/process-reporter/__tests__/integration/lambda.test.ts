@@ -9,7 +9,7 @@ import { extractServiceOutputs } from "../extractServiceOutputs";
 import { hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
 const jestTimeout = 20 * 1000;
-const appSyncRetryTimeout = jestTimeout - (4 * 1000);
+const appSyncRetryTimeout = jestTimeout - 4 * 1000;
 jest.setTimeout(jestTimeout);
 
 describe("Lambda deployment", () => {

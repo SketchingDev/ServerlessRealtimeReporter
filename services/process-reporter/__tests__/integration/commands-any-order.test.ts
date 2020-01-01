@@ -10,7 +10,7 @@ import { extractServiceOutputs } from "../extractServiceOutputs";
 import { and, hasTaskId, hasTaskStatus, waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
 const jestTimeout = 20 * 1000;
-const appSyncRetryTimeout = jestTimeout - (4 * 1000);
+const appSyncRetryTimeout = jestTimeout - 4 * 1000;
 jest.setTimeout(jestTimeout);
 
 describe("Commands can be processed in any order", () => {
@@ -62,7 +62,7 @@ describe("Commands can be processed in any order", () => {
     await sqs
       .sendMessageBatch({
         Entries: [
-          { Id: uuidv4(), MessageBody: JSON.stringify(createProcessCommand ) },
+          { Id: uuidv4(), MessageBody: JSON.stringify(createProcessCommand) },
           { Id: uuidv4(), MessageBody: JSON.stringify(createTaskCommand) },
         ],
         QueueUrl: queueUrl,
@@ -81,7 +81,7 @@ describe("Commands can be processed in any order", () => {
       client,
       createProcessCommand.id,
       appSyncRetryTimeout,
-      hasTaskId(createTaskCommand.id)
+      hasTaskId(createTaskCommand.id),
     );
 
     expect(process).toStrictEqual({
@@ -131,7 +131,7 @@ describe("Commands can be processed in any order", () => {
     await lambda
       .invoke({
         FunctionName: lambdaArn!,
-        Payload: JSON.stringify(createSqsEvent([updateTaskCommand, createProcessCommand, createTaskCommand ])),
+        Payload: JSON.stringify(createSqsEvent([updateTaskCommand, createProcessCommand, createTaskCommand])),
       })
       .promise();
 
@@ -139,7 +139,7 @@ describe("Commands can be processed in any order", () => {
       client,
       createProcessCommand.id,
       appSyncRetryTimeout,
-      and(hasTaskId(createTaskCommand.id), hasTaskStatus(updateTaskCommand.status))
+      and(hasTaskId(createTaskCommand.id), hasTaskStatus(updateTaskCommand.status)),
     );
     expect(process).toStrictEqual({
       __typename: "Process",
