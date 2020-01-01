@@ -10,7 +10,6 @@ jest.setTimeout(jestTimeout);
 describe("SQS deployment", () => {
   const queueNameCloudFormationOutputKey = "QueueName";
   const lambdaArnCloudFormationOutputKey = "ExampleProcessLambdaFunctionQualifiedArn";
-  // const twoMessagesExpected = 2;
 
   const region = "us-east-1";
   const stackName = "example-process-test";

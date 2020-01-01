@@ -24,7 +24,7 @@ describe("Update Task", () => {
 
     expect(mockAppSync.mutate).toHaveBeenCalledWith({
       variables: {
-        failureReason: updateTaskCommand.failureReason,
+        failureReason: "N/A",
         status: updateTaskCommand.status,
         id: updateTaskCommand.id,
         updated: updateTaskCommand.updatedTimestamp,
