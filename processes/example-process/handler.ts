@@ -1,12 +1,8 @@
 import laconia from "@laconia/core";
 import { S3CreateEvent, SQSHandler } from "aws-lambda";
 import { SQS } from "aws-sdk";
+import interval from "interval-promise";
 import { SqsProgressReporter } from "./src/SqsProgressReporter";
-
-// export const sourceIdGenerator = (namespace: string) => (s3Event: IS3Record): RequestSourceId =>
-//   uuidv5(s3Event.s3.object.key + s3Event.eventTime, namespace);
-
-// const secondOverhead = 1;
 
 export interface EnvDependencies {
   REGION: string;
@@ -14,36 +10,56 @@ export interface EnvDependencies {
 }
 
 export interface AppDependencies {
-  progressReporter: SqsProgressReporter
+  progressReporter: SqsProgressReporter;
+  randomIntGenerator: (min: number, max: number) => number;
+  runAfterInterval: (msInterval: number, func: () => Promise<void>) => Promise<void>;
 }
 
 const awsDependencies = ({ env }: { env: EnvDependencies }) => ({
   sqs: new SQS({ region: env.REGION }),
 });
 
-
-export const appDependencies = async ({sqs, env}: {
-  sqs: SQS;
-  env: EnvDependencies;
-}): Promise<AppDependencies> => ({
+export const appDependencies = async ({ sqs, env }: { sqs: SQS; env: EnvDependencies }): Promise<AppDependencies> => ({
   progressReporter: await SqsProgressReporter.createFromQueueName(sqs, env.PROCESS_SQS_QUEUE_NAME),
+  randomIntGenerator: (min: number, max: number) => {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  },
+  runAfterInterval: async (msInterval: number, func: () => Promise<any>) =>
+    interval(async () => func(), msInterval, { iterations: 1 }),
 });
 
-// @ts-ignore
-export const app = async (event: S3CreateEvent, { progressReporter }: AppDependencies) => {
-  // const progresses = event.Records.map((record) => {
-  //   console.log(record);
-  //   const invocationId = `${record.eventTime}-${record.s3.object.key}`;
-  //   const invocationName = 'Download 0 images';
-  //   return progressReporter.invokedProcess(invocationId, invocationName);
-  // });
-  //
-  // await Promise.all(progresses);
-  const processa = {id: `${Date.now()}`, name: 'Download 0 images'};
-  const task = {id: `${Date.now()}`, name: "Downloading image 1", parentProcess: { id: processa.id }};
-  await progressReporter.invokedProcess(processa);
-  await progressReporter.invokedProcessTask(task);
-  await progressReporter.taskCompleteSuccessfully(task);
+export const app = async (
+  _: S3CreateEvent,
+  { progressReporter, randomIntGenerator, runAfterInterval }: AppDependencies,
+) => {
+  const totalImages = randomIntGenerator(3, 20);
+
+  console.log(`Creating random process to simulate downloading ${totalImages} images`);
+  const newProcess = { id: `${Date.now()}`, name: `Download ${totalImages} images` };
+  await progressReporter.invokedProcess(newProcess);
+
+  const promises: Array<Promise<any>> = [];
+  for (let i = 1; i <= totalImages; i++) {
+    console.log(`Creating task for downloading image ${i}`);
+    const newTask = { id: `${newProcess.id}-${i}`, name: `Downloading image ${i}`, parentProcess: newProcess };
+    promises.push(
+      runAfterInterval(randomIntGenerator(1000, 10000), async () => progressReporter.invokedProcessTask(newTask)),
+    );
+
+    // if (getRandomInt(0,1)) {
+    promises.push(
+      runAfterInterval(randomIntGenerator(10000, 20000), async () =>
+        progressReporter.taskCompleteSuccessfully(newTask),
+      ),
+    );
+    // } else {
+    // promises.push(runAfterRandomInterval({min: 10, max: 20}, async () => progressReporter.taskCompleteUnsuccessfully(newTask, `Failed to download image ${i}`)));
+    // }
+  }
+
+  await Promise.all(promises);
 };
 
 export const doSomething: SQSHandler = laconia(app)

@@ -4,7 +4,7 @@ import uuidv4 from "uuid/v4";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForMessagesInSqs } from "../waitForSourceInSqs";
 
-jest.setTimeout(20 * 1000);
+jest.setTimeout(40 * 1000);
 
 describe("S3 deployment", () => {
   const twoMessagesExpected = 2;
@@ -57,7 +57,7 @@ describe("S3 deployment", () => {
     expect(parsedBodies).toMatchObject(expect.arrayContaining([{
       commandType: "create-process",
       id: expect.any(String),
-      name: "Download 0 images",
+      name: expect.any(String),
       createdTimestamp: expect.any(Number),
       }]),
     );

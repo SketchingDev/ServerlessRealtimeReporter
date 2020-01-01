@@ -14,6 +14,7 @@ export interface Process {
 }
 
 export interface Task {
+  id: string;
   parentProcess: Process;
   name: string;
 }
@@ -87,7 +88,7 @@ export class SqsProgressReporter implements ProgressReporter {
     const createTaskCommand: CreateTaskCommand = {
       commandType: "create-task",
       processId: task.parentProcess.id,
-      id: task.parentProcess.id,
+      id: task.id,
       name: task.name,
       createdTimestamp: Date.now(),
     };

@@ -17,6 +17,7 @@
     "@laconia/core": "^1.8.0",
     "@laconia/event": "^1.8.0",
     "aws-sdk": "^2.585.0",
+    "interval-promise": "^1.3.0",
     "serverless-s3-remover": "^0.6.0",
     "source-map-support": "^0.5.16"
   },

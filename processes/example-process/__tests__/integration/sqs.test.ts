@@ -3,7 +3,7 @@ import "isomorphic-fetch";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForMessagesInSqs } from "../waitForSourceInSqs";
 
-jest.setTimeout(20 * 1000);
+jest.setTimeout(40 * 1000);
 
 describe("SQS deployment", () => {
   const queueNameCloudFormationOutputKey = "QueueName";
@@ -51,14 +51,7 @@ describe("SQS deployment", () => {
         {
           commandType: "create-process",
           id: expect.any(String),
-          name: "Download 0 images",
-          createdTimestamp: expect.any(Number),
-        },
-        {
-          commandType: "create-task",
-          id: expect.any(String),
-          name: "Downloading image 1",
-          processId: expect.any(String),
+          name:  expect.any(String),
           createdTimestamp: expect.any(Number),
         },
       ]),
