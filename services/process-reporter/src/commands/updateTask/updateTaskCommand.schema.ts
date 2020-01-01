@@ -1,14 +1,14 @@
-export const createTaskCommandSchema = {
+export const updateTaskCommandSchema = {
   definitions: {},
   $schema: "http://json-schema.org/draft-07/schema#",
   $id: "http://example.com/root.json",
   type: "object",
   title: "The Root Schema",
-  required: ["commandType", "id", "name", "processId", "createdTimestamp"],
+  required: ["commandType", "id", "status", "updatedTimestamp"],
   properties: {
     commandType: {
       $id: "#/properties/commandType",
-      const: "create-task",
+      const: "update-task",
       title: "The Command Type Schema",
     },
     id: {
@@ -19,24 +19,23 @@ export const createTaskCommandSchema = {
       examples: ["test-id"],
       pattern: "^(.*)$",
     },
-    name: {
-      $id: "#/properties/name",
+    status: {
+      $id: "#/properties/status",
+      title: "The Status Schema",
+      items: {
+        type: "string",
+        enum: ["PENDING", "SUCCESS", "FAILURE"],
+      },
+    },
+    failureReason: {
+      $id: "#/properties/failureReason",
       type: "string",
-      title: "The Name Schema",
+      title: "The Failure Reason Schema",
       default: "",
-      examples: ["test-id"],
       pattern: "^(.*)$",
     },
-    processId: {
-      $id: "#/properties/processId",
-      type: "string",
-      title: "The Id Schema",
-      default: "",
-      examples: ["test-id"],
-      pattern: "^(.*)$",
-    },
-    createdTimestamp: {
-      $id: "#/properties/createdTimestamp",
+    updatedTimestamp: {
+      $id: "#/properties/updatedTimestamp",
       type: "integer",
       title: "The Timestamp Schema",
       default: 0,

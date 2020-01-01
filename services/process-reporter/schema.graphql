@@ -1,5 +1,5 @@
 type Mutation {
-	createProcess(id: ID!, name: String!, timestamp: AWSTimestamp!): Process!
+	createProcess(id: ID!, name: String!, created: AWSTimestamp!): Process!
 	addTask(id: String!, processId: ID!, name: String! created: AWSTimestamp!): Task!
 	updateTask(id: ID!, updated: AWSTimestamp!, status: TaskStatus!, failureReason: String): Task!
 }
@@ -18,7 +18,7 @@ enum TaskStatus {
 type Process {
 	id: ID!
 	name: String!
-	timestamp: AWSTimestamp!
+	created: AWSTimestamp!
 	tasks: [Task]!
 }
 

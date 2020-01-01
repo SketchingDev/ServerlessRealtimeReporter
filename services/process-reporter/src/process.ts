@@ -3,6 +3,6 @@ import { Task } from "./task";
 export interface Process {
   id: string;
   name: string;
-  timestamp: number;
+  createdTimestamp: number;
   tasks: Task[];
 }

@@ -8,12 +8,11 @@ import { addTaskMutation } from "../../src/commands/createTask/graphql/addTaskMu
 import { AddTaskVariables } from "../../src/commands/createTask/graphql/addTaskVariables";
 import { Task } from "../../src/task";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import {
-  and,
-  hasProcessId,
-  hasTaskId,
-  waitForProcessInAppSync,
-} from "../waitForProcessInAppSync";
+import { hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+
+const jestTimeout = 20 * 1000;
+const appSyncRetryTimeout = jestTimeout - 4 * 1000;
+jest.setTimeout(jestTimeout);
 
 describe("GraphQL deployment", () => {
   const region = "us-east-1";
@@ -23,10 +22,7 @@ describe("GraphQL deployment", () => {
   let createProcessVariables: Readonly<CreateProcessVariables>;
 
   beforeAll(async () => {
-    const outputs = await extractServiceOutputs(
-      new CloudFormation({ region, apiVersion: "2010-05-15" }),
-      stackName,
-    );
+    const outputs = await extractServiceOutputs(new CloudFormation({ region, apiVersion: "2010-05-15" }), stackName);
 
     client = new AWSAppSyncClient({
       auth: {
@@ -43,7 +39,7 @@ describe("GraphQL deployment", () => {
     createProcessVariables = {
       id: uuidv4(),
       name: uuidv4(),
-      timestamp: Date.now(),
+      created: Date.now(),
     };
   });
 
@@ -59,7 +55,7 @@ describe("GraphQL deployment", () => {
         __typename: "Process",
         id: createProcessVariables.id,
         name: createProcessVariables.name,
-        timestamp: createProcessVariables.timestamp,
+        created: createProcessVariables.created,
       },
     });
   });
@@ -71,15 +67,14 @@ describe("GraphQL deployment", () => {
       fetchPolicy: "no-cache",
     });
 
-    const process = await waitForProcessInAppSync(client, hasProcessId(createProcessVariables.id));
-    expect(process).toStrictEqual(
-      {
-        __typename: "Process",
-        id: createProcessVariables.id,
-        name: createProcessVariables.name,
-        timestamp: createProcessVariables.timestamp,
-        tasks: [],
-      });
+    const process = await waitForProcessInAppSync(client, createProcessVariables.id, appSyncRetryTimeout);
+    expect(process).toStrictEqual({
+      __typename: "Process",
+      id: createProcessVariables.id,
+      name: createProcessVariables.name,
+      created: createProcessVariables.created,
+      tasks: [],
+    });
   });
 
   test("process with task created is returned in getAllProcesses", async () => {
@@ -90,7 +85,10 @@ describe("GraphQL deployment", () => {
     });
 
     const addTaskVariables: AddTaskVariables = {
-      created: Date.now(), id: uuidv4(), name: uuidv4(), processId: createProcessVariables.id,
+      created: Date.now(),
+      id: uuidv4(),
+      name: uuidv4(),
+      processId: createProcessVariables.id,
     };
 
     await client.mutate<{ addTask: Task }, AddTaskVariables>({
@@ -99,14 +97,19 @@ describe("GraphQL deployment", () => {
       fetchPolicy: "no-cache",
     });
 
-    const process = await waitForProcessInAppSync(client, and(hasProcessId(createProcessVariables.id), hasTaskId(addTaskVariables.id)));
-    expect(process).toStrictEqual(
-      {
-        __typename: "Process",
-        id: createProcessVariables.id,
-        name: createProcessVariables.name,
-        timestamp: createProcessVariables.timestamp,
-        tasks: [{
+    const process = await waitForProcessInAppSync(
+      client,
+      createProcessVariables.id,
+      appSyncRetryTimeout,
+      hasTaskId(addTaskVariables.id),
+    );
+    expect(process).toStrictEqual({
+      __typename: "Process",
+      id: createProcessVariables.id,
+      name: createProcessVariables.name,
+      created: createProcessVariables.created,
+      tasks: [
+        {
           __typename: "Task",
           created: addTaskVariables.created,
           failureReason: null,
@@ -115,8 +118,8 @@ describe("GraphQL deployment", () => {
           processId: createProcessVariables.id,
           status: "PENDING",
           updated: addTaskVariables.created,
-        }],
-      });
+        },
+      ],
+    });
   });
 });
-

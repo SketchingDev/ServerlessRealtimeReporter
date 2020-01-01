@@ -1,15 +1,15 @@
 import gql from "graphql-tag";
 
 export const createProcessMutation = gql(`
-mutation createProcess($id: ID! $name: String! $timestamp: AWSTimestamp!) {
+mutation createProcess($id: ID! $name: String! $created: AWSTimestamp!) {
   createProcess(
     id: $id
     name: $name
-    timestamp: $timestamp
+    created: $created
   ) {
     id
     name
-    timestamp
+    created
   }
 }
 `);

@@ -8,9 +8,11 @@ import { createProcessCommandSchema } from "./createProcessCommand.schema";
 import { createProcessMutation } from "./graphql/createProcessMutation";
 import { CreateProcessVariables } from "./graphql/createProcessVariables";
 
-export const isCreateProcessCommand = ({commandType}: Command) => commandType === "create-process";
+export const isCreateProcessCommand = ({ commandType }: Command) => commandType === "create-process";
 
-export const createProcess = (appSync: AWSAppSyncClient<any>, logger: Logger) => async (command: CreateProcessCommand): Promise<void> => {
+export const createProcess = (appSync: AWSAppSyncClient<any>, logger: Logger) => async (
+  command: CreateProcessCommand,
+): Promise<void> => {
   logger.info("Received Create Process Command", command);
   validateCommand(command, createProcessCommandSchema, logger);
 
@@ -18,7 +20,7 @@ export const createProcess = (appSync: AWSAppSyncClient<any>, logger: Logger) =>
     variables: {
       id: command.id,
       name: command.name,
-      timestamp: command.timestamp,
+      created: command.createdTimestamp,
     },
     mutation: createProcessMutation,
     fetchPolicy: "no-cache",

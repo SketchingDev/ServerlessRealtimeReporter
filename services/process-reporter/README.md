@@ -2,7 +2,15 @@
 
 The Process Reporter consumes commands from its SQS for managing Processes and their tasks.
 
+## Commands
 * CreateProcessCommand
+* CreateTaskCommand
+* UpdateTaskCommand
+
+
+## Features
+
+* Order of commands doesn't matter
 
 ## Testing
 
@@ -16,7 +24,7 @@ $ serverless graphql-playground
 *Create a Process*
 ```graphql
 mutation {
-  createProcess(id: "test-id", name:"This my first process", , timestamp: 1556307929337){
+  createProcess(id: "test-id", name:"This my first process", , created: 1556307929337){
     name,
   }
 }
@@ -28,7 +36,7 @@ mutation {
   getProcess(id: "test-id") {
     name,
     id,
-    timestamp
+    created
   }
 }
 ```
@@ -40,7 +48,7 @@ mutation {
   getAllProcesses {
     name,
     id,
-    timestamp
+    created
   }
 }
 ```
@@ -51,7 +59,7 @@ subscription {
   onCreateProcess{
     id,
     name,
-    timestamp
+    created
   }
 }
 ```

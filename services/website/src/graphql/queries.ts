@@ -3,7 +3,7 @@ export const getAllProcessesQuery = `
     getAllProcesses {
       id
       name
-      timestamp
+      created
     }
   }
 `;
@@ -13,7 +13,7 @@ export const getProcessQuery = `
     getProcess(id: $id){
       id
       name
-      timestamp
+      created
     }
   }
 `;

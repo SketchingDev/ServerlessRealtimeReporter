@@ -17,4 +17,5 @@ This solution can be deployed with a user that only has the necessary permission
 ## Improvements
 
 * Using queries in place of scans for DynamoDB
-* Using pagination
+* Use [event sourcing with projections](https://stackoverflow.com/a/47313279) for commands
+* Implement pagination

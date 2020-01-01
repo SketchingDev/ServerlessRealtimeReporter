@@ -7,5 +7,5 @@ export interface CreateProcessCommand extends Command {
    */
   id: string;
   name: string;
-  timestamp: number;
+  createdTimestamp: number;
 }

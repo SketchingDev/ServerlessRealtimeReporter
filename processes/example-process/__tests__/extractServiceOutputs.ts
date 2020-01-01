@@ -1,15 +1,20 @@
 import { CloudFormation } from "aws-sdk";
 
 export interface StackOutputs {
-  stackName: string,
+  stackName: string;
   outputsToExtract: string[];
 }
 
 // TODO Look to deduplicate this
-export const extractServiceOutputs = async (cloudFormation: CloudFormation, {stackName, outputsToExtract}: StackOutputs): Promise<Map<string, string>> => {
-  const describeStacksResponse = await cloudFormation.describeStacks({
-    StackName: stackName,
-  }).promise();
+export const extractServiceOutputs = async (
+  cloudFormation: CloudFormation,
+  { stackName, outputsToExtract }: StackOutputs,
+): Promise<Map<string, string>> => {
+  const describeStacksResponse = await cloudFormation
+    .describeStacks({
+      StackName: stackName,
+    })
+    .promise();
 
   if (!describeStacksResponse.Stacks) {
     throw new Error(`CloudFormation Stack '${stackName}' not found`);
@@ -21,7 +26,7 @@ export const extractServiceOutputs = async (cloudFormation: CloudFormation, {sta
 
   for (const stack of stacksWithOutputs) {
     for (const { OutputKey, OutputValue } of stack.Outputs!) {
-      if ((OutputKey && OutputValue) && outputsToExtract.includes(OutputKey)) {
+      if (OutputKey && OutputValue && outputsToExtract.includes(OutputKey)) {
         keyValues.set(OutputKey, OutputValue);
       }
     }

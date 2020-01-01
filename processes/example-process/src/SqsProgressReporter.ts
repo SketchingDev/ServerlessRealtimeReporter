@@ -14,15 +14,16 @@ export interface Process {
 }
 
 export interface Task {
+  id: string;
   parentProcess: Process;
   name: string;
 }
 
 interface CreateProcessCommand {
-  commandType: "create-process",
+  commandType: "create-process";
   id: string;
   name: string;
-  timestamp: number;
+  createdTimestamp: number;
 }
 
 interface CreateTaskCommand {
@@ -33,6 +34,13 @@ interface CreateTaskCommand {
   createdTimestamp: number;
 }
 
+interface UpdateTaskCommand {
+  commandType: "update-task";
+  id: string;
+  status: "PENDING" | "SUCCESS" | "FAILURE";
+  updatedTimestamp: number;
+  failureReason?: string;
+}
 
 export class SqsProgressReporter implements ProgressReporter {
   public static async createFromQueueName(sqs: SQS, queueName: string) {
@@ -60,7 +68,7 @@ export class SqsProgressReporter implements ProgressReporter {
       commandType: "create-process",
       id: process.id,
       name: process.name,
-      timestamp: Date.now(),
+      createdTimestamp: Date.now(),
     };
 
     await this.sqs
@@ -79,7 +87,7 @@ export class SqsProgressReporter implements ProgressReporter {
     const createTaskCommand: CreateTaskCommand = {
       commandType: "create-task",
       processId: task.parentProcess.id,
-      id: task.parentProcess.id,
+      id: task.id,
       name: task.name,
       createdTimestamp: Date.now(),
     };
@@ -87,6 +95,39 @@ export class SqsProgressReporter implements ProgressReporter {
     await this.sqs
       .sendMessage({
         MessageBody: JSON.stringify(createTaskCommand),
+        QueueUrl: this.queueUrl,
+      })
+      .promise();
+  }
+
+  public async taskCompleteSuccessfully(task: { id: string }) {
+    const updateTaskCommand: UpdateTaskCommand = {
+      commandType: "update-task",
+      id: task.id,
+      status: "SUCCESS",
+      updatedTimestamp: Date.now(),
+    };
+
+    await this.sqs
+      .sendMessage({
+        MessageBody: JSON.stringify(updateTaskCommand),
+        QueueUrl: this.queueUrl,
+      })
+      .promise();
+  }
+
+  public async taskCompleteUnsuccessfully(task: { id: string }, failureReason: string) {
+    const updateTaskCommand: UpdateTaskCommand = {
+      commandType: "update-task",
+      failureReason,
+      id: task.id,
+      status: "FAILURE",
+      updatedTimestamp: Date.now(),
+    };
+
+    await this.sqs
+      .sendMessage({
+        MessageBody: JSON.stringify(updateTaskCommand),
         QueueUrl: this.queueUrl,
       })
       .promise();

@@ -19,7 +19,7 @@ export class ListProcesses extends React.Component {
           <List.Header>
             <Link to={`/process/${process.id}`}>{process.name}</Link>
           </List.Header>
-          <List.Description as="a">{distanceInWords(Date.now(), new Date(process.timestamp))}</List.Description>
+          <List.Description as="a">{distanceInWords(Date.now(), new Date(process.created))}</List.Description>
         </List.Content>
       </List.Item>
     );
@@ -27,7 +27,7 @@ export class ListProcesses extends React.Component {
     const ProcessList = ({ processes }: { processes: Process[] }) => (
       <List divided={true} relaxed={true}>
         {processes
-          .sort((s1, s2) => s2.timestamp - s1.timestamp)
+          .sort((s1, s2) => s2.created - s1.created)
           .map(process => (
             <ProcessItem key={process.id} process={process} />
           ))}
@@ -45,24 +45,23 @@ export class ListProcesses extends React.Component {
         subscription={graphqlOperation(onCreateProcessSubscription)}
         onSubscriptionMsg={subscriptionMsg}
       >
-        {({
-          data,
-          loading,
-          errors,
-        }: {
-          data: { getAllProcesses: Process[] };
-          loading: any;
-          errors: Error[];
-        }) => {
+        {({ data, loading, errors }: { data: { getAllProcesses: Process[] }; loading: any; errors: Error[] }) => {
           if (errors && errors.length > 0) {
-            return <div><h3>Error...</h3>{errors.map(eb => (<p key="{eb.message}">{eb.message}</p>))}</div>;
+            return (
+              <div>
+                <h3>Error...</h3>
+                {errors.map(eb => (
+                  <p key="{eb.message}">{eb.message}</p>
+                ))}
+              </div>
+            );
           }
           if (loading || !data.getAllProcesses) {
             return <h3>Loading...</h3>;
           }
 
           const allProcesses = Object.values(this.createdProcesses).concat(data.getAllProcesses);
-          const orderedProcesses = allProcesses.sort((s1: Process, s2: Process) => s1.timestamp - s2.timestamp);
+          const orderedProcesses = allProcesses.sort((s1: Process, s2: Process) => s1.created - s2.created);
 
           return (
             <div>

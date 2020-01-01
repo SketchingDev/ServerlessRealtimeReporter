@@ -5,11 +5,13 @@ import uuidv4 from "uuid/v4";
 import { CreateProcessCommand } from "../../src/commands/createProcess/createProcessCommand";
 import { CreateTaskCommand } from "../../src/commands/createTask/createTaskCommand";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { and, hasProcessId, hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-jest.setTimeout(20 * 1000);
+const jestTimeout = 20 * 1000;
+const appSyncRetryTimeout = jestTimeout - 4 * 1000;
+jest.setTimeout(jestTimeout);
 
-describe("SQS deployment", () => {
+describe("Commands processed from the queue", () => {
   const region = "us-east-1";
   const stackName = "process-reporter-test";
 
@@ -41,24 +43,24 @@ describe("SQS deployment", () => {
       commandType: "create-process",
       id: uuidv4(),
       name: uuidv4(),
-      timestamp: Date.now(),
+      createdTimestamp: Date.now(),
     };
   });
 
   test("process created is returned in getAllProcessesQuery", async () => {
     await sqs
       .sendMessage({
-        MessageBody: JSON.stringify({ ...createProcessCommand }),
+        MessageBody: JSON.stringify(createProcessCommand),
         QueueUrl: queueUrl,
       })
       .promise();
 
-    const process = await waitForProcessInAppSync(client, hasProcessId(createProcessCommand.id));
+    const process = await waitForProcessInAppSync(client, createProcessCommand.id, appSyncRetryTimeout);
     expect(process).toMatchObject({
       __typename: "Process",
       id: createProcessCommand.id,
       name: createProcessCommand.name,
-      timestamp: createProcessCommand.timestamp,
+      created: createProcessCommand.createdTimestamp,
     });
   });
 
@@ -74,8 +76,8 @@ describe("SQS deployment", () => {
     await sqs
       .sendMessageBatch({
         Entries: [
-          { Id: uuidv4(), MessageBody: JSON.stringify({ ...createProcessCommand }) },
-          { Id: uuidv4(), MessageBody: JSON.stringify({...createTaskCommand}) },
+          { Id: uuidv4(), MessageBody: JSON.stringify(createProcessCommand) },
+          { Id: uuidv4(), MessageBody: JSON.stringify(createTaskCommand) },
         ],
         QueueUrl: queueUrl,
       })
@@ -83,13 +85,15 @@ describe("SQS deployment", () => {
 
     const process = await waitForProcessInAppSync(
       client,
-      and(hasProcessId(createProcessCommand.id), hasTaskId(createTaskCommand.id)),
+      createProcessCommand.id,
+      appSyncRetryTimeout,
+      hasTaskId(createTaskCommand.id),
     );
     expect(process).toStrictEqual({
       __typename: "Process",
       id: createProcessCommand.id,
       name: createProcessCommand.name,
-      timestamp: createProcessCommand.timestamp,
+      created: createProcessCommand.createdTimestamp,
       tasks: [
         {
           __typename: "Task",

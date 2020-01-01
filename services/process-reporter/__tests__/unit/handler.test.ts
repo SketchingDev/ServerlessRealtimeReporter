@@ -31,15 +31,15 @@ describe("CreateProcessCommand", () => {
       commandType: "create-process",
       id: "test-id",
       name: "test-name",
-      timestamp: 123,
+      createdTimestamp: 123,
     };
-    await handler(createSqsEvent({...createProcessCommand}), {} as any, jest.fn());
+    await handler(createSqsEvent({ ...createProcessCommand }), {} as any, jest.fn());
 
     expect(mockAppSync.mutate).toHaveBeenCalledWith({
       variables: {
         id: createProcessCommand.id,
         name: createProcessCommand.name,
-        timestamp: createProcessCommand.timestamp,
+        created: createProcessCommand.createdTimestamp,
       },
       mutation: createProcessMutation,
       fetchPolicy: "no-cache",
@@ -52,9 +52,9 @@ describe("CreateProcessCommand", () => {
       processId: "123",
       id: "test-id",
       name: "test-name",
-      createdTimestamp: 345
+      createdTimestamp: 345,
     };
-    await handler(createSqsEvent({...createTaskCommand}), {} as any, jest.fn());
+    await handler(createSqsEvent({ ...createTaskCommand }), {} as any, jest.fn());
 
     expect(mockAppSync.mutate).toHaveBeenCalledWith({
       variables: {
@@ -73,11 +73,11 @@ describe("CreateProcessCommand", () => {
       commandType: "create-process",
       id: "",
       name: undefined as any,
-      timestamp: 0,
+      createdTimestamp: 0,
     };
 
-    await handler(createSqsEvent({...invalidCommand}), {} as any, jest.fn());
-    expect(mockLogger.error).toHaveBeenCalledWith("Create Process Command is invalid", [
+    await handler(createSqsEvent({ ...invalidCommand }), {} as any, jest.fn());
+    expect(mockLogger.error).toHaveBeenCalledWith("Command is invalid", [
       {
         dataPath: "",
         keyword: "required",
@@ -87,6 +87,4 @@ describe("CreateProcessCommand", () => {
       },
     ]);
   });
-
-
 });

@@ -1,11 +1,11 @@
 import gql from "graphql-tag";
 
-export const getAllProcessesQuery = gql(`
-{
-  getAllProcesses {
+export const getProcessQuery = gql(`
+query getProcess($id: ID!){
+  getProcess(id: $id) {
     id,
     name,
-    timestamp,
+    created,
     tasks {
       id
       processId
