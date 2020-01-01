@@ -4,11 +4,11 @@ import uuidv4 from "uuid/v4";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForMessagesInSqs } from "../waitForSourceInSqs";
 
-jest.setTimeout(40 * 1000);
+const jestTimeout = 40 * 1000;
+const sqsRetryTimeout = jestTimeout - 4 * 1000;
+jest.setTimeout(jestTimeout);
 
 describe("S3 deployment", () => {
-  const twoMessagesExpected = 2;
-
   const queueNameCloudFormationOutputKey = "QueueName";
   const bucketNameCloudFormationOutputKey = "BucketName";
 
@@ -46,19 +46,23 @@ describe("S3 deployment", () => {
 
     await s3.putObject({ Bucket: bucketName!, Key: objectKey, Body: "TestBody" }).promise();
 
-    const messages = await waitForMessagesInSqs(sqs, queueUrl!, twoMessagesExpected);
-    expect(messages).toBeDefined();
-
-    const parsedBodies = messages.map(({ Body }) => JSON.parse(Body!));
-    expect(parsedBodies).toMatchObject(
-      expect.arrayContaining([
-        {
-          commandType: "create-process",
-          id: expect.any(String),
-          name: expect.any(String),
-          createdTimestamp: expect.any(Number),
-        },
-      ]),
+    await waitForMessagesInSqs(
+      sqs,
+      queueUrl!,
+      (messages: SQS.MessageList) => {
+        const parsedBodies = messages.map(({ Body }) => JSON.parse(Body!));
+        expect(parsedBodies).toMatchObject(
+          expect.arrayContaining([
+            {
+              commandType: "create-process",
+              id: expect.any(String),
+              name: expect.any(String),
+              createdTimestamp: expect.any(Number),
+            },
+          ]),
+        );
+      },
+      sqsRetryTimeout,
     );
   });
 });

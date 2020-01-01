@@ -3,12 +3,14 @@ import "isomorphic-fetch";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForMessagesInSqs } from "../waitForSourceInSqs";
 
-jest.setTimeout(40 * 1000);
+const jestTimeout = 40 * 1000;
+const sqsRetryTimeout = jestTimeout - 4 * 1000;
+jest.setTimeout(jestTimeout);
 
 describe("SQS deployment", () => {
   const queueNameCloudFormationOutputKey = "QueueName";
   const lambdaArnCloudFormationOutputKey = "ExampleProcessLambdaFunctionQualifiedArn";
-  const twoMessagesExpected = 2;
+  // const twoMessagesExpected = 2;
 
   const region = "us-east-1";
   const stackName = "example-process-test";
@@ -42,19 +44,23 @@ describe("SQS deployment", () => {
       })
       .promise();
 
-    const messages = await waitForMessagesInSqs(sqs, queueUrl!, twoMessagesExpected);
-    expect(messages).toBeDefined();
-
-    const parsedBodies = messages.map(({ Body }) => JSON.parse(Body!));
-    expect(parsedBodies).toMatchObject(
-      expect.arrayContaining([
-        {
-          commandType: "create-process",
-          id: expect.any(String),
-          name: expect.any(String),
-          createdTimestamp: expect.any(Number),
-        },
-      ]),
+    await waitForMessagesInSqs(
+      sqs,
+      queueUrl!,
+      (messages: SQS.MessageList) => {
+        const parsedBodies = messages.map(({ Body }) => JSON.parse(Body!));
+        expect(parsedBodies).toMatchObject(
+          expect.arrayContaining([
+            {
+              commandType: "create-process",
+              id: expect.any(String),
+              name: expect.any(String),
+              createdTimestamp: expect.any(Number),
+            }
+          ]),
+        );
+      },
+      sqsRetryTimeout,
     );
   });
 });
