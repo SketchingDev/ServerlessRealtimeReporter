@@ -3,7 +3,7 @@ import "isomorphic-fetch";
 import { extractServiceOutputs } from "../extractServiceOutputs";
 import { waitForMessagesInSqs } from "../waitForSourceInSqs";
 
-const jestTimeout = 40 * 1000;
+const jestTimeout = 60 * 1000;
 const sqsRetryTimeout = jestTimeout - 4 * 1000;
 jest.setTimeout(jestTimeout);
 

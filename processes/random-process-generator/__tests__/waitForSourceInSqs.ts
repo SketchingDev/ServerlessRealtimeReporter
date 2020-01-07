@@ -6,7 +6,7 @@ export const waitForMessagesInSqs = async (
   queueUrl: string,
   expectation: (messages: SQS.MessageList) => void,
   timeoutInMs: number,
-): Promise<SQS.MessageList> => {
+): Promise<void> => {
   const messages: SQS.MessageList = [];
   await pRetry(
     async () => {
@@ -23,6 +23,4 @@ export const waitForMessagesInSqs = async (
       onFailedAttempt: () => console.error("Messages not found in queue. Retrying..."),
     },
   );
-
-  return messages;
 };

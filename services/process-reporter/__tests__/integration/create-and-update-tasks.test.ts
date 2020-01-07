@@ -6,9 +6,9 @@ import { CreateProcessCommand } from "../../src/commands/createProcess/createPro
 import { CreateTaskCommand } from "../../src/commands/createTask/createTaskCommand";
 import { UpdateTaskCommand } from "../../src/commands/updateTask/updateTaskCommand";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { and, hasTaskId, hasTaskStatus, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-const jestTimeout = 30 * 1000;
+const jestTimeout = 60 * 1000;
 const appSyncRetryTimeout = jestTimeout - 4 * 1000;
 jest.setTimeout(jestTimeout);
 
@@ -71,30 +71,31 @@ describe("Create/Update Tasks", () => {
         QueueUrl: queueUrl,
       })
       .promise();
-    const process = await waitForProcessInAppSync(
+
+    await waitForProcessInAppSync(
       client,
       createProcessCommand.id,
+      process =>
+        expect(process).toStrictEqual({
+          __typename: "Process",
+          id: createProcessCommand.id,
+          name: createProcessCommand.name,
+          created: createProcessCommand.createdTimestamp,
+          tasks: [
+            {
+              __typename: "Task",
+              created: createTaskCommand.createdTimestamp,
+              failureReason: null,
+              id: createTaskCommand.id,
+              name: createTaskCommand.name,
+              processId: createProcessCommand.id,
+              status: "PENDING",
+              updated: createTaskCommand.createdTimestamp,
+            },
+          ],
+        }),
       appSyncRetryTimeout,
-      hasTaskId(createTaskCommand.id),
     );
-    expect(process).toStrictEqual({
-      __typename: "Process",
-      id: createProcessCommand.id,
-      name: createProcessCommand.name,
-      created: createProcessCommand.createdTimestamp,
-      tasks: [
-        {
-          __typename: "Task",
-          created: createTaskCommand.createdTimestamp,
-          failureReason: null,
-          id: createTaskCommand.id,
-          name: createTaskCommand.name,
-          processId: createProcessCommand.id,
-          status: "PENDING",
-          updated: createTaskCommand.createdTimestamp,
-        },
-      ],
-    });
   });
 
   test("Tasks can be updated", async () => {
@@ -117,29 +118,29 @@ describe("Create/Update Tasks", () => {
       })
       .promise();
 
-    const process = await waitForProcessInAppSync(
+    await waitForProcessInAppSync(
       client,
       createProcessCommand.id,
+      process =>
+        expect(process).toStrictEqual({
+          __typename: "Process",
+          id: createProcessCommand.id,
+          name: createProcessCommand.name,
+          created: createProcessCommand.createdTimestamp,
+          tasks: [
+            {
+              __typename: "Task",
+              created: createTaskCommand.createdTimestamp,
+              failureReason: updateTaskCommand.failureReason,
+              id: createTaskCommand.id,
+              name: createTaskCommand.name,
+              processId: createProcessCommand.id,
+              status: "FAILURE",
+              updated: updateTaskCommand.updatedTimestamp,
+            },
+          ],
+        }),
       appSyncRetryTimeout,
-      and(hasTaskId(createTaskCommand.id), hasTaskStatus("FAILURE")),
     );
-    expect(process).toStrictEqual({
-      __typename: "Process",
-      id: createProcessCommand.id,
-      name: createProcessCommand.name,
-      created: createProcessCommand.createdTimestamp,
-      tasks: [
-        {
-          __typename: "Task",
-          created: createTaskCommand.createdTimestamp,
-          failureReason: updateTaskCommand.failureReason,
-          id: createTaskCommand.id,
-          name: createTaskCommand.name,
-          processId: createProcessCommand.id,
-          status: "FAILURE",
-          updated: updateTaskCommand.updatedTimestamp,
-        },
-      ],
-    });
   });
 });
