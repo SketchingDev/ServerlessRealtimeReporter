@@ -7,9 +7,9 @@ import { CreateTaskCommand } from "../../src/commands/createTask/createTaskComma
 import { UpdateTaskCommand } from "../../src/commands/updateTask/updateTaskCommand";
 import { createSqsEvent } from "../createSqsEvent";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { and, hasTaskId, hasTaskStatus, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-const jestTimeout = 20 * 1000;
+const jestTimeout = 60 * 1000;
 const appSyncRetryTimeout = jestTimeout - 4 * 1000;
 jest.setTimeout(jestTimeout);
 
@@ -68,40 +68,31 @@ describe("Commands can be processed in any order", () => {
         QueueUrl: queueUrl,
       })
       .promise();
-    // }
 
-    // await lambda
-    //   .invoke({
-    //     FunctionName: lambdaArn!,
-    //     Payload: JSON.stringify(createSqsEvent([{ ...createTaskCommand }, { ...createProcessCommand }])),
-    //   })
-    //   .promise();
-
-    const process = await waitForProcessInAppSync(
+    await waitForProcessInAppSync(
       client,
       createProcessCommand.id,
+      process =>
+        expect(process).toStrictEqual({
+          __typename: "Process",
+          id: createProcessCommand.id,
+          name: createProcessCommand.name,
+          created: createProcessCommand.createdTimestamp,
+          tasks: [
+            {
+              __typename: "Task",
+              created: createTaskCommand.createdTimestamp,
+              failureReason: null,
+              id: createTaskCommand.id,
+              name: createTaskCommand.name,
+              processId: createProcessCommand.id,
+              status: "PENDING",
+              updated: createTaskCommand.createdTimestamp,
+            },
+          ],
+        }),
       appSyncRetryTimeout,
-      hasTaskId(createTaskCommand.id),
     );
-
-    expect(process).toStrictEqual({
-      __typename: "Process",
-      id: createProcessCommand.id,
-      name: createProcessCommand.name,
-      created: createProcessCommand.createdTimestamp,
-      tasks: [
-        {
-          __typename: "Task",
-          created: createTaskCommand.createdTimestamp,
-          failureReason: null,
-          id: createTaskCommand.id,
-          name: createTaskCommand.name,
-          processId: createProcessCommand.id,
-          status: "PENDING",
-          updated: createTaskCommand.createdTimestamp,
-        },
-      ],
-    });
   });
 
   test("Task can be updated before being created", async () => {
@@ -135,29 +126,29 @@ describe("Commands can be processed in any order", () => {
       })
       .promise();
 
-    const process = await waitForProcessInAppSync(
+    await waitForProcessInAppSync(
       client,
       createProcessCommand.id,
+      process =>
+        expect(process).toStrictEqual({
+          __typename: "Process",
+          id: createProcessCommand.id,
+          name: createProcessCommand.name,
+          created: createProcessCommand.createdTimestamp,
+          tasks: [
+            {
+              __typename: "Task",
+              created: createTaskCommand.createdTimestamp,
+              failureReason: updateTaskCommand.failureReason,
+              id: createTaskCommand.id,
+              name: createTaskCommand.name,
+              processId: createProcessCommand.id,
+              status: "FAILURE",
+              updated: updateTaskCommand.updatedTimestamp,
+            },
+          ],
+        }),
       appSyncRetryTimeout,
-      and(hasTaskId(createTaskCommand.id), hasTaskStatus(updateTaskCommand.status)),
     );
-    expect(process).toStrictEqual({
-      __typename: "Process",
-      id: createProcessCommand.id,
-      name: createProcessCommand.name,
-      created: createProcessCommand.createdTimestamp,
-      tasks: [
-        {
-          __typename: "Task",
-          created: createTaskCommand.createdTimestamp,
-          failureReason: updateTaskCommand.failureReason,
-          id: createTaskCommand.id,
-          name: createTaskCommand.name,
-          processId: createProcessCommand.id,
-          status: "FAILURE",
-          updated: updateTaskCommand.updatedTimestamp,
-        },
-      ],
-    });
   });
 });

@@ -6,16 +6,12 @@ import { getProcessQuery } from "./getProcessQuery";
 
 const throughputExceededException = "DynamoDB:ProvisionedThroughputExceededException";
 
-type ProcessPredicate = (process: Process) => boolean;
-
 export const waitForProcessInAppSync = async (
   client: AWSAppSyncClient<any>,
   processId: string,
+  expectation: (process: Process | null) => void,
   timeoutInMs: number,
-  predicate: ProcessPredicate = () => true,
-): Promise<Process | null> => {
-  let actualProcess: Process | null = null;
-
+): Promise<void> =>
   await pRetry(
     async () => {
       let data: { getProcess: Process | null } = { getProcess: null };
@@ -42,12 +38,7 @@ export const waitForProcessInAppSync = async (
           throw new pRetry.AbortError(err.message);
         }
       }
-
-      if (data.getProcess && predicate(data.getProcess)) {
-        actualProcess = data.getProcess;
-      }
-
-      expect(actualProcess).not.toBeNull();
+      expectation(data.getProcess);
     },
     {
       maxRetryTime: timeoutInMs,
@@ -55,15 +46,3 @@ export const waitForProcessInAppSync = async (
       onFailedAttempt: () => console.error("Process not found in AppSync. Retrying..."),
     },
   );
-
-  return actualProcess;
-};
-
-export const hasTaskId = (expectedTaskId: string): ProcessPredicate => ({ tasks }) =>
-  tasks.some(t => t.id === expectedTaskId);
-
-export const hasTaskStatus = (expectedTaskStatus: string): ProcessPredicate => ({ tasks }) =>
-  tasks.some(t => t.status === expectedTaskStatus);
-
-export const and = (...predicates: ProcessPredicate[]): ProcessPredicate => process =>
-  predicates.every(predicate => predicate(process));

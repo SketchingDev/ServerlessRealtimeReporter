@@ -8,9 +8,9 @@ import { addTaskMutation } from "../../src/commands/createTask/graphql/addTaskMu
 import { AddTaskVariables } from "../../src/commands/createTask/graphql/addTaskVariables";
 import { Task } from "../../src/task";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-const jestTimeout = 20 * 1000;
+const jestTimeout = 60 * 1000;
 const appSyncRetryTimeout = jestTimeout - 4 * 1000;
 jest.setTimeout(jestTimeout);
 
@@ -67,14 +67,19 @@ describe("GraphQL deployment", () => {
       fetchPolicy: "no-cache",
     });
 
-    const process = await waitForProcessInAppSync(client, createProcessVariables.id, appSyncRetryTimeout);
-    expect(process).toStrictEqual({
-      __typename: "Process",
-      id: createProcessVariables.id,
-      name: createProcessVariables.name,
-      created: createProcessVariables.created,
-      tasks: [],
-    });
+    await waitForProcessInAppSync(
+      client,
+      createProcessVariables.id,
+      process =>
+        expect(process).toStrictEqual({
+          __typename: "Process",
+          id: createProcessVariables.id,
+          name: createProcessVariables.name,
+          created: createProcessVariables.created,
+          tasks: [],
+        }),
+      appSyncRetryTimeout,
+    );
   });
 
   test("process with task created is returned in getAllProcesses", async () => {
@@ -97,29 +102,29 @@ describe("GraphQL deployment", () => {
       fetchPolicy: "no-cache",
     });
 
-    const process = await waitForProcessInAppSync(
+    await waitForProcessInAppSync(
       client,
       createProcessVariables.id,
+      process =>
+        expect(process).toStrictEqual({
+          __typename: "Process",
+          id: createProcessVariables.id,
+          name: createProcessVariables.name,
+          created: createProcessVariables.created,
+          tasks: [
+            {
+              __typename: "Task",
+              created: addTaskVariables.created,
+              failureReason: null,
+              id: addTaskVariables.id,
+              name: addTaskVariables.name,
+              processId: createProcessVariables.id,
+              status: "PENDING",
+              updated: addTaskVariables.created,
+            },
+          ],
+        }),
       appSyncRetryTimeout,
-      hasTaskId(addTaskVariables.id),
     );
-    expect(process).toStrictEqual({
-      __typename: "Process",
-      id: createProcessVariables.id,
-      name: createProcessVariables.name,
-      created: createProcessVariables.created,
-      tasks: [
-        {
-          __typename: "Task",
-          created: addTaskVariables.created,
-          failureReason: null,
-          id: addTaskVariables.id,
-          name: addTaskVariables.name,
-          processId: createProcessVariables.id,
-          status: "PENDING",
-          updated: addTaskVariables.created,
-        },
-      ],
-    });
   });
 });

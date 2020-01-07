@@ -6,9 +6,9 @@ import { CreateProcessCommand } from "../../src/commands/createProcess/createPro
 import { CreateTaskCommand } from "../../src/commands/createTask/createTaskCommand";
 import { createSqsEvent } from "../createSqsEvent";
 import { extractServiceOutputs } from "../extractServiceOutputs";
-import { hasTaskId, waitForProcessInAppSync } from "../waitForProcessInAppSync";
+import { waitForProcessInAppSync } from "../waitForProcessInAppSync";
 
-const jestTimeout = 20 * 1000;
+const jestTimeout = 60 * 1000;
 const appSyncRetryTimeout = jestTimeout - 4 * 1000;
 jest.setTimeout(jestTimeout);
 
@@ -54,13 +54,18 @@ describe("Lambda deployment", () => {
       })
       .promise();
 
-    const process = await waitForProcessInAppSync(client, createProcessCommand.id, appSyncRetryTimeout);
-    expect(process).toMatchObject({
-      __typename: "Process",
-      id: createProcessCommand.id,
-      name: createProcessCommand.name,
-      created: createProcessCommand.createdTimestamp,
-    });
+    await waitForProcessInAppSync(
+      client,
+      createProcessCommand.id,
+      process =>
+        expect(process).toMatchObject({
+          __typename: "Process",
+          id: createProcessCommand.id,
+          name: createProcessCommand.name,
+          created: createProcessCommand.createdTimestamp,
+        }),
+      appSyncRetryTimeout,
+    );
   });
 
   test("process with task created is returned in getAllProcesses", async () => {
@@ -79,29 +84,29 @@ describe("Lambda deployment", () => {
       })
       .promise();
 
-    const process = await waitForProcessInAppSync(
+    await waitForProcessInAppSync(
       client,
       createProcessCommand.id,
+      process =>
+        expect(process).toStrictEqual({
+          __typename: "Process",
+          id: createProcessCommand.id,
+          name: createProcessCommand.name,
+          created: createProcessCommand.createdTimestamp,
+          tasks: [
+            {
+              __typename: "Task",
+              created: createTaskCommand.createdTimestamp,
+              failureReason: null,
+              id: createTaskCommand.id,
+              name: createTaskCommand.name,
+              processId: createProcessCommand.id,
+              status: "PENDING",
+              updated: createTaskCommand.createdTimestamp,
+            },
+          ],
+        }),
       appSyncRetryTimeout,
-      hasTaskId(createTaskCommand.id),
     );
-    expect(process).toStrictEqual({
-      __typename: "Process",
-      id: createProcessCommand.id,
-      name: createProcessCommand.name,
-      created: createProcessCommand.createdTimestamp,
-      tasks: [
-        {
-          __typename: "Task",
-          created: createTaskCommand.createdTimestamp,
-          failureReason: null,
-          id: createTaskCommand.id,
-          name: createTaskCommand.name,
-          processId: createProcessCommand.id,
-          status: "PENDING",
-          updated: createTaskCommand.createdTimestamp,
-        },
-      ],
-    });
   });
 });
