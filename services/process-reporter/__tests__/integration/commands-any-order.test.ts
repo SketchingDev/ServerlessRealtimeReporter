@@ -116,7 +116,7 @@ describe("Commands can be processed in any order", () => {
       failureReason: uuidv4(),
       id: createTaskCommand.id,
       status: "FAILURE",
-      updatedTimestamp: Date.now(),
+      updatedTimestamp: Date.now() + 10,
     };
 
     await lambda

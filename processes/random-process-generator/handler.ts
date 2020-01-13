@@ -42,15 +42,18 @@ export const app = async (
 
   const promises: Array<Promise<any>> = [];
   for (let i = 1; i <= totalImages; i++) {
+    const intervalForInvokingTask = randomIntGenerator(1000, 10000);
+    const intervalForCompletingTask = randomIntGenerator(10000, 20000);
+
     console.log(`Creating task for downloading image ${i}`);
     const newTask = { id: `${newProcess.id}-${i}`, name: `Downloading image ${i}`, parentProcess: newProcess };
     promises.push(
-      runAfterInterval(randomIntGenerator(1000, 10000), async () => progressReporter.invokedProcessTask(newTask)),
+      runAfterInterval(intervalForInvokingTask, async () => progressReporter.invokedProcessTask(newTask)),
     );
 
     // if (getRandomInt(0,1)) {
     promises.push(
-      runAfterInterval(randomIntGenerator(10000, 20000), async () => progressReporter.taskCompleteSuccessfully(newTask)),
+      runAfterInterval(intervalForCompletingTask, async () => progressReporter.taskCompleteSuccessfully(newTask)),
     );
     // } else {
     // promises.push(runAfterRandomInterval({min: 10, max: 20}, async () => progressReporter.taskCompleteUnsuccessfully(newTask, `Failed to download image ${i}`)));
