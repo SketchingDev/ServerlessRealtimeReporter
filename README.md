@@ -2,15 +2,18 @@
 
 [![lerna](https://img.shields.io/badge/maintained%20with-lerna-cc00ff.svg)](https://lerna.js.org/)
 
+A demonstration of a Serverless application for reporting the progress of automated processes in realtime through a UI.
+
+In this example processes update their progress by pushing Commands to a queue, although it could be extended to other
+mediums e.g. CloudWatch.
+
 <p align="center">
   <img src="docs/architecture.png">
 </p>
 
-## What makes up a process
-
-* Process invocation
-  * Sub-tasks
-    * The success of the invocation is dependent on these sub-tasks succeeding
+At the centre of the application is AppSync (AWS's fully managed GraphQL instance) which manages the state. It pushes
+data to the UI via subscriptions and receives data from a Lambda via mutations. SQS invokes the Lambda with commands
+pushed to it by automated processes.
 
 ## Using a restricted deployment user
 
@@ -50,10 +53,9 @@ aws configure --profile process-reporter-deployer
 AWS_PROFILE=process-reporter-deployer yarn test:integration
 ```
 
-
-
 ## Improvements
 
 * Using queries in place of scans for DynamoDB
-* Use [event sourcing with projections](https://stackoverflow.com/a/47313279) for commands
+* Using EventBridge with a schema registry
+* Use [event sourcing with projections](https://stackoverflow.com/a/47313279) for Commands
 * Implement pagination
